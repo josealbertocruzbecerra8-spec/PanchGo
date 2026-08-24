@@ -1,0 +1,252 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    color: #111111;
+}
+
+button {
+    font-family: inherit;
+}
+
+.topbar {
+    width: 100%;
+    height: 64px;
+    background: #111111;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.cart-button {
+    background: #ffffff;
+    color: #111111;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.hero {
+    background: #111111;
+    color: #ffffff;
+    padding: 45px 20px 50px;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 34px;
+    margin-bottom: 12px;
+}
+
+.hero p {
+    max-width: 600px;
+    margin: auto;
+    font-size: 17px;
+    line-height: 1.5;
+    color: #dddddd;
+}
+
+.categories,
+.business-section,
+.store-section,
+.welcome-section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 18px;
+}
+
+.categories h2,
+.business-section h2,
+.store-section h2,
+.welcome-section h2 {
+    font-size: 25px;
+    margin-bottom: 18px;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.category-card {
+    background: #ffffff;
+    border: 1px solid #dddddd;
+    border-radius: 16px;
+    padding: 28px 15px;
+    min-height: 140px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.category-card:hover,
+.business-card:hover {
+    transform: translateY(-2px);
+}
+
+.category-icon {
+    font-size: 42px;
+}
+
+.business-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.business-card {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #dddddd;
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.business-icon {
+    width: 65px;
+    height: 65px;
+    background: #eeeeee;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    flex-shrink: 0;
+}
+
+.business-info h3 {
+    font-size: 19px;
+    margin-bottom: 5px;
+}
+
+.business-info p {
+    color: #666666;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.delivery-label {
+    display: inline-block;
+    margin-top: 7px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.disabled {
+    cursor: default;
+    opacity: 0.65;
+}
+
+.store-section {
+    display: none;
+}
+
+.empty-message {
+    background: #ffffff;
+    border: 1px solid #dddddd;
+    border-radius: 16px;
+    padding: 35px 20px;
+    text-align: center;
+}
+
+.empty-message span {
+    font-size: 45px;
+}
+
+.empty-message h3 {
+    margin: 12px 0 7px;
+    font-size: 21px;
+}
+
+.empty-message p {
+    color: #666666;
+    line-height: 1.5;
+}
+
+.welcome-section {
+    padding-top: 10px;
+}
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.step {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 18px 10px;
+    text-align: center;
+    border: 1px solid #dddddd;
+}
+
+.step strong {
+    display: block;
+    font-size: 25px;
+    margin-bottom: 8px;
+}
+
+.step p {
+    font-size: 14px;
+    color: #555555;
+}
+
+footer {
+    background: #111111;
+    color: #aaaaaa;
+    text-align: center;
+    padding: 25px 15px;
+    margin-top: 20px;
+}
+
+footer p {
+    margin: 5px 0;
+}
+
+@media (max-width: 600px) {
+
+    .hero h1 {
+        font-size: 29px;
+    }
+
+    .category-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .steps {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .business-card {
+        padding: 14px;
+    }
+}

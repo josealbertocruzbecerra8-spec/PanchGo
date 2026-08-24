@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#111111">
+
+    <title>Delivery San Pancho</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="logo">Delivery San Pancho</div>
+
+    <button class="cart-button" id="cartButton">
+        🛒 <span id="cartCount">0</span>
+    </button>
+</header>
+
+<main>
+
+    <section class="hero">
+        <h1>Pide lo que quieras.</h1>
+
+        <p>
+            Negocios de San Francisco del Rincón,
+            directamente hasta tu puerta.
+        </p>
+    </section>
+
+    <section class="categories">
+
+        <h2>¿Qué quieres pedir?</h2>
+
+        <div class="category-grid">
+
+            <button class="category-card" id="foodButton">
+                <span class="category-icon">🍔</span>
+                <span>Comida</span>
+            </button>
+
+            <button class="category-card" id="storesButton">
+                <span class="category-icon">🛍️</span>
+                <span>Tiendas y productos</span>
+            </button>
+
+        </div>
+
+    </section>
+
+    <section class="business-section" id="businessSection">
+
+        <h2>Negocios de comida</h2>
+
+        <div class="business-list">
+
+            <button class="business-card" id="birriaHomeButton">
+                <div class="business-icon">🌮</div>
+
+                <div class="business-info">
+                    <h3>BirriaHome</h3>
+                    <p>Birria y comida • San Francisco del Rincón</p>
+                    <span class="delivery-label">Entrega a domicilio</span>
+                </div>
+            </button>
+
+            <div class="business-card disabled">
+                <div class="business-icon">🏪</div>
+
+                <div class="business-info">
+                    <h3>Próximamente</h3>
+                    <p>Más negocios locales se irán agregando.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="store-section" id="storeSection">
+
+        <h2>Tiendas y productos</h2>
+
+        <div class="empty-message">
+            <span>🛍️</span>
+            <h3>Próximamente</h3>
+            <p>
+                Estamos trabajando para incorporar
+                más negocios y productos locales.
+            </p>
+        </div>
+
+    </section>
+
+    <section class="welcome-section">
+
+        <h2>¿Cómo funciona?</h2>
+
+        <div class="steps">
+
+            <div class="step">
+                <strong>1</strong>
+                <p>Elige un negocio</p>
+            </div>
+
+            <div class="step">
+                <strong>2</strong>
+                <p>Selecciona tus productos</p>
+            </div>
+
+            <div class="step">
+                <strong>3</strong>
+                <p>Indica dónde entregar</p>
+            </div>
+
+            <div class="step">
+                <strong>4</strong>
+                <p>Recibe tu pedido</p>
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<footer>
+    <p>Delivery San Pancho</p>
+    <p>Servicio local de entregas</p>
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>
