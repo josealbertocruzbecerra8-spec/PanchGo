@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#111111">
-
-    <title>Delivery San Pancho</title>
-
+    <title>PanchGo — San Pancho se mueve</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header class="topbar">
-    <div class="logo">Delivery San Pancho</div>
+    <div class="logo">PanchGo</div>
 
     <button class="cart-button" id="cartButton">
         🛒 <span id="cartCount">0</span>
@@ -23,28 +21,56 @@
 <main>
 
     <section class="hero">
-        <h1>Pide lo que quieras.</h1>
 
-        <p>
-            Negocios de San Francisco del Rincón,
-            directamente hasta tu puerta.
-        </p>
+        <div class="hero-overlay"></div>
+
+        <div class="hero-content">
+
+            <span class="hero-badge">DELIVERY LOCAL</span>
+
+            <h1>PanchGo</h1>
+
+            <h2>San Pancho se mueve.</h2>
+
+            <p>
+                Tus negocios favoritos, tus productos y tu comida,
+                directo hasta tu puerta.
+            </p>
+
+            <div class="hero-buttons">
+                <button class="primary-button" id="heroFoodButton">
+                    🍔 Explorar negocios
+                </button>
+
+                <button class="secondary-button" id="heroStoreButton">
+                    🛍️ Ver tiendas
+                </button>
+            </div>
+
+        </div>
+
     </section>
 
     <section class="categories">
 
         <h2>¿Qué quieres pedir?</h2>
 
+        <p class="section-subtitle">
+            Explora lo que PanchGo tiene preparado para ti.
+        </p>
+
         <div class="category-grid">
 
             <button class="category-card" id="foodButton">
                 <span class="category-icon">🍔</span>
-                <span>Comida</span>
+                <strong>Comida</strong>
+                <span>Restaurantes y comida local</span>
             </button>
 
             <button class="category-card" id="storesButton">
                 <span class="category-icon">🛍️</span>
-                <span>Tiendas y productos</span>
+                <strong>Tiendas</strong>
+                <span>Productos y negocios locales</span>
             </button>
 
         </div>
@@ -53,27 +79,47 @@
 
     <section class="business-section" id="businessSection">
 
-        <h2>Negocios de comida</h2>
+        <div class="section-heading">
+            <div>
+                <span class="section-tag">DESCUBRE</span>
+                <h2>Negocios locales</h2>
+            </div>
+        </div>
 
         <div class="business-list">
 
             <button class="business-card" id="birriaHomeButton">
+
                 <div class="business-icon">🌮</div>
 
                 <div class="business-info">
                     <h3>BirriaHome</h3>
-                    <p>Birria y comida • San Francisco del Rincón</p>
-                    <span class="delivery-label">Entrega a domicilio</span>
+                    <p>
+                        Birria y comida • San Francisco del Rincón
+                    </p>
+
+                    <span class="delivery-label">
+                        🛵 Entrega a domicilio
+                    </span>
                 </div>
+
+                <span class="business-arrow">›</span>
+
             </button>
 
             <div class="business-card disabled">
+
                 <div class="business-icon">🏪</div>
 
                 <div class="business-info">
-                    <h3>Próximamente</h3>
-                    <p>Más negocios locales se irán agregando.</p>
+                    <h3>Más negocios próximamente</h3>
+
+                    <p>
+                        Estamos trabajando para incorporar
+                        más negocios locales.
+                    </p>
                 </div>
+
             </div>
 
         </div>
@@ -82,22 +128,34 @@
 
     <section class="store-section" id="storeSection">
 
+        <span class="section-tag">PRÓXIMAMENTE</span>
+
         <h2>Tiendas y productos</h2>
 
         <div class="empty-message">
+
             <span>🛍️</span>
-            <h3>Próximamente</h3>
+
+            <h3>Estamos preparando algo grande.</h3>
+
             <p>
-                Estamos trabajando para incorporar
-                más negocios y productos locales.
+                Muy pronto podrás encontrar más tiendas,
+                productos y negocios locales dentro de PanchGo.
             </p>
+
         </div>
 
     </section>
 
     <section class="welcome-section">
 
+        <span class="section-tag">PANCHGO</span>
+
         <h2>¿Cómo funciona?</h2>
+
+        <p class="section-subtitle">
+            Pedir será cada vez más fácil.
+        </p>
 
         <div class="steps">
 
@@ -125,11 +183,39 @@
 
     </section>
 
+    <section class="join-section">
+
+        <span class="section-tag">¿TIENES UN NEGOCIO?</span>
+
+        <h2>
+            Tu negocio también puede ser parte de PanchGo.
+        </h2>
+
+        <p>
+            Estamos construyendo una plataforma local
+            y queremos escuchar a los negocios de San Pancho.
+        </p>
+
+        <button class="join-button">
+            Quiero conocer PanchGo
+        </button>
+
+    </section>
+
 </main>
 
 <footer>
-    <p>Delivery San Pancho</p>
-    <p>Servicio local de entregas</p>
+
+    <p><strong>PanchGo</strong></p>
+
+    <p>
+        San Pancho se mueve. 🛵
+    </p>
+
+    <p class="footer-small">
+        Proyecto en desarrollo
+    </p>
+
 </footer>
 
 <script src="script.js"></script>
