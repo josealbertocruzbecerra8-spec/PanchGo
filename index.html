@@ -88,12 +88,19 @@
 
         <div class="business-list">
 
-            <button class="business-card" id="birriaHomeButton">
+            <!-- BIRRIA HOME -->
+
+            <button
+                class="business-card"
+                id="birriaHomeButton"
+                data-business="birria"
+            >
 
                 <div class="business-icon">🌮</div>
 
                 <div class="business-info">
                     <h3>BirriaHome</h3>
+
                     <p>
                         Birria y comida • San Francisco del Rincón
                     </p>
@@ -107,24 +114,188 @@
 
             </button>
 
-            <div class="business-card disabled">
+
+            <!-- CHOCOMILES -->
+
+            <button
+                class="business-card"
+                id="chocomilesButton"
+                data-business="chocomiles"
+            >
+
+                <div class="business-icon">🥤</div>
+
+                <div class="business-info">
+                    <h3>Chocomiles</h3>
+
+                    <p>
+                        Chocomiles y elotes • San Francisco del Rincón
+                    </p>
+
+                    <span class="delivery-label">
+                        🛵 Entrega a domicilio
+                    </span>
+                </div>
+
+                <span class="business-arrow">›</span>
+
+            </button>
+
+
+            <!-- TERCER NEGOCIO -->
+
+            <button
+                class="business-card"
+                id="business3Button"
+                data-business="negocio3"
+            >
 
                 <div class="business-icon">🏪</div>
 
                 <div class="business-info">
-                    <h3>Más negocios próximamente</h3>
+                    <h3>Nuevo negocio</h3>
 
                     <p>
-                        Estamos trabajando para incorporar
-                        más negocios locales.
+                        Próximamente • San Francisco del Rincón
                     </p>
+
+                    <span class="delivery-label">
+                        🛵 Entrega a domicilio
+                    </span>
                 </div>
 
-            </div>
+                <span class="business-arrow">›</span>
+
+            </button>
 
         </div>
 
     </section>
+
+
+    <!-- PRODUCTOS -->
+
+    <section class="products-section" id="productsSection">
+
+        <div class="section-heading">
+
+            <div>
+                <span class="section-tag">MENÚ</span>
+
+                <h2 id="productsBusinessName">
+                    Selecciona un negocio
+                </h2>
+            </div>
+
+        </div>
+
+        <p
+            class="section-subtitle"
+            id="productsBusinessDescription"
+        >
+            Selecciona un negocio para ver sus productos.
+        </p>
+
+        <div
+            class="product-grid"
+            id="productGrid"
+        >
+        </div>
+
+    </section>
+
+
+    <!-- CARRITO -->
+
+    <section class="cart-section" id="cartSection">
+
+        <span class="section-tag">TU PEDIDO</span>
+
+        <h2>Carrito</h2>
+
+        <div id="cartItems">
+
+            <div class="empty-cart">
+                🛒
+                <h3>Tu carrito está vacío</h3>
+
+                <p>
+                    Agrega productos de un negocio para comenzar tu pedido.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="cart-summary">
+
+            <div>
+                <span>Productos</span>
+                <strong id="cartSubtotal">$0.00</strong>
+            </div>
+
+            <div>
+                <span>Envío</span>
+                <strong id="deliveryCost">$0.00</strong>
+            </div>
+
+            <div class="cart-total-row">
+                <span>Total</span>
+                <strong id="cartTotal">$0.00</strong>
+            </div>
+
+        </div>
+
+        <div class="order-form">
+
+            <h3>Datos de entrega</h3>
+
+            <input
+                type="text"
+                id="customerName"
+                placeholder="Tu nombre"
+            >
+
+            <input
+                type="tel"
+                id="customerPhone"
+                placeholder="Tu teléfono"
+            >
+
+            <textarea
+                id="customerAddress"
+                placeholder="Dirección de entrega"
+                rows="3"
+            ></textarea>
+
+            <select id="paymentMethod">
+
+                <option value="">
+                    Selecciona forma de pago
+                </option>
+
+                <option value="Efectivo">
+                    💵 Efectivo
+                </option>
+
+                <option value="Transferencia">
+                    📲 Transferencia
+                </option>
+
+            </select>
+
+            <button
+                class="primary-button"
+                id="sendOrderButton"
+            >
+                🛵 Confirmar pedido
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- TIENDAS -->
 
     <section class="store-section" id="storeSection">
 
@@ -146,6 +317,9 @@
         </div>
 
     </section>
+
+
+    <!-- COMO FUNCIONA -->
 
     <section class="welcome-section">
 
@@ -183,6 +357,9 @@
 
     </section>
 
+
+    <!-- NEGOCIOS -->
+
     <section class="join-section">
 
         <span class="section-tag">¿TIENES UN NEGOCIO?</span>
@@ -196,13 +373,17 @@
             y queremos escuchar a los negocios de San Pancho.
         </p>
 
-        <button class="join-button">
+        <button
+            class="join-button"
+            id="joinBusinessButton"
+        >
             Quiero conocer PanchGo
         </button>
 
     </section>
 
 </main>
+
 
 <footer>
 
@@ -217,6 +398,48 @@
     </p>
 
 </footer>
+
+
+<!-- =========================
+     MODAL DE CONFIRMACIÓN
+========================= -->
+
+<div
+    class="modal"
+    id="orderModal"
+>
+
+    <div class="modal-box">
+
+        <button
+            class="modal-close"
+            id="closeOrderModal"
+        >
+            ×
+        </button>
+
+        <span class="section-tag">
+            PEDIDO
+        </span>
+
+        <h2>
+            Confirmar pedido
+        </h2>
+
+        <div id="orderPreview">
+        </div>
+
+        <button
+            class="primary-button"
+            id="whatsappOrderButton"
+        >
+            📲 Enviar pedido
+        </button>
+
+    </div>
+
+</div>
+
 
 <script src="script.js"></script>
 
