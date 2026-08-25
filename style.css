@@ -67,17 +67,19 @@ button {
     align-items: center;
     overflow: hidden;
 
-    /*
-       AQUÍ colocaremos posteriormente
-       la imagen de la moto.
-    */
     background:
         linear-gradient(
             90deg,
-            #111111 0%,
-            #171717 45%,
-            #303030 100%
-        );
+            rgba(17, 17, 17, 0.95) 0%,
+            rgba(17, 17, 17, 0.78) 38%,
+            rgba(17, 17, 17, 0.25) 75%,
+            rgba(17, 17, 17, 0.10) 100%
+        ),
+        url("PanchGo_portada.jpg");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 
     color: white;
 }
