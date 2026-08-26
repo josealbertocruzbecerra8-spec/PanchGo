@@ -1,9 +1,23 @@
+/* =========================================================
+   PANCHGO
+   SCRIPT COMPLETO — DIAGNÓSTICO SUPABASE
+========================================================= */
+
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
 const SUPABASE_URL =
     "https://vciekecvbqvlbavxhmfz.supabase.co";
 
 const SUPABASE_KEY =
     "sb_publishable_1wRntDky8YlSGLmynI8O5Q_lNSbWMbu";
 
+
+/* =========================================================
+   ESTADO
+========================================================= */
 
 let cart = [];
 
@@ -44,13 +58,19 @@ const productsSection =
     document.getElementById("productsSection");
 
 const productsBusinessName =
-    document.getElementById("productsBusinessName");
+    document.getElementById(
+        "productsBusinessName"
+    );
 
 const productsBusinessDescription =
-    document.getElementById("productsBusinessDescription");
+    document.getElementById(
+        "productsBusinessDescription"
+    );
 
 const productGrid =
-    document.getElementById("productGrid");
+    document.getElementById(
+        "productGrid"
+    );
 
 const cartSection =
     document.getElementById("cartSection");
@@ -59,43 +79,112 @@ const cartItems =
     document.getElementById("cartItems");
 
 const cartSubtotal =
-    document.getElementById("cartSubtotal");
+    document.getElementById(
+        "cartSubtotal"
+    );
 
 const deliveryCost =
-    document.getElementById("deliveryCost");
+    document.getElementById(
+        "deliveryCost"
+    );
 
 const cartTotal =
-    document.getElementById("cartTotal");
+    document.getElementById(
+        "cartTotal"
+    );
 
 const customerName =
-    document.getElementById("customerName");
+    document.getElementById(
+        "customerName"
+    );
 
 const customerPhone =
-    document.getElementById("customerPhone");
+    document.getElementById(
+        "customerPhone"
+    );
 
 const customerAddress =
-    document.getElementById("customerAddress");
+    document.getElementById(
+        "customerAddress"
+    );
 
 const paymentMethod =
-    document.getElementById("paymentMethod");
+    document.getElementById(
+        "paymentMethod"
+    );
 
 const sendOrderButton =
-    document.getElementById("sendOrderButton");
+    document.getElementById(
+        "sendOrderButton"
+    );
 
 const orderModal =
-    document.getElementById("orderModal");
+    document.getElementById(
+        "orderModal"
+    );
 
 const orderPreview =
-    document.getElementById("orderPreview");
+    document.getElementById(
+        "orderPreview"
+    );
 
 const closeOrderModal =
-    document.getElementById("closeOrderModal");
+    document.getElementById(
+        "closeOrderModal"
+    );
 
 const whatsappOrderButton =
-    document.getElementById("whatsappOrderButton");
+    document.getElementById(
+        "whatsappOrderButton"
+    );
 
 const joinBusinessButton =
-    document.getElementById("joinBusinessButton");
+    document.getElementById(
+        "joinBusinessButton"
+    );
+
+
+/* =========================================================
+   FUNCIÓN DE DIAGNÓSTICO VISIBLE
+========================================================= */
+
+function showBusinessMessage(
+    title,
+    message,
+    icon = "ℹ️"
+) {
+
+    const businessList =
+        document.querySelector(
+            ".business-list"
+        );
+
+
+    if (!businessList) {
+
+        return;
+    }
+
+
+    businessList.innerHTML = `
+
+        <div class="empty-message">
+
+            <span>${icon}</span>
+
+            <h3>
+                ${title}
+            </h3>
+
+            <p>
+                ${message}
+            </p>
+
+        </div>
+
+    `;
+
+}
 
 
 /* =========================================================
@@ -104,57 +193,82 @@ const joinBusinessButton =
 
 async function loadBusinesses() {
 
-    const businessList =
-        document.querySelector(".business-list");
+    console.log(
+        "PanchGo: iniciando consulta REST..."
+    );
 
 
-    if (!businessList) {
+    showBusinessMessage(
+        "Cargando negocios...",
+        "Conectando con Supabase.",
+        "⏳"
+    );
 
-        console.error(
-            "PanchGo: no existe .business-list"
+
+    const controller =
+        new AbortController();
+
+
+    const timeout =
+        setTimeout(
+            function () {
+
+                controller.abort();
+
+            },
+            8000
         );
-
-        return;
-    }
-
-
-    businessList.innerHTML = `
-        <div class="empty-message">
-            <span>⏳</span>
-            <h3>Cargando negocios...</h3>
-            <p>Conectando con PanchGo.</p>
-        </div>
-    `;
 
 
     try {
 
+        const url =
+            SUPABASE_URL +
+            "/rest/v1/Businesses" +
+            "?select=name,%22Descripci%C3%B3n%22,%22Active%22" +
+            "&%22Active%22=eq.true" +
+            "&order=name";
+
+
         console.log(
-            "PanchGo: iniciando consulta REST..."
+            "PanchGo URL:",
+            url
         );
 
 
         const response =
             await fetch(
-                SUPABASE_URL +
-                "/rest/v1/Businesses?select=name,%22Descripci%C3%B3n%22,%22Active%22&%22Active%22=eq.true&order=name",
+                url,
                 {
                     method: "GET",
 
+                    signal:
+                        controller.signal,
+
                     headers: {
-                        "apikey": SUPABASE_KEY,
+
+                        "apikey":
+                            SUPABASE_KEY,
+
                         "Authorization":
                             "Bearer " +
                             SUPABASE_KEY,
-                        "Content-Type":
+
+                        "Accept":
                             "application/json"
+
                     }
                 }
             );
 
 
+        clearTimeout(
+            timeout
+        );
+
+
         console.log(
-            "PanchGo: respuesta HTTP:",
+            "PanchGo HTTP:",
             response.status
         );
 
@@ -164,7 +278,7 @@ async function loadBusinesses() {
 
 
         console.log(
-            "PanchGo: respuesta Supabase:",
+            "PanchGo respuesta:",
             responseText
         );
 
@@ -172,7 +286,7 @@ async function loadBusinesses() {
         if (!response.ok) {
 
             throw new Error(
-                "Supabase HTTP " +
+                "Supabase respondió HTTP " +
                 response.status +
                 ": " +
                 responseText
@@ -191,74 +305,84 @@ async function loadBusinesses() {
                     responseText
                 );
 
-        } catch (jsonError) {
+        } catch (error) {
 
             throw new Error(
-                "Supabase respondió algo que no es JSON: " +
-                responseText
+                "La respuesta de Supabase no es JSON."
             );
 
         }
 
 
         console.log(
-            "PanchGo: negocios:",
+            "PanchGo negocios recibidos:",
             data
         );
 
 
         if (
-            !Array.isArray(data) ||
+            !Array.isArray(data)
+        ) {
+
+            throw new Error(
+                "Supabase no devolvió una lista de negocios."
+            );
+
+        }
+
+
+        if (
             data.length === 0
         ) {
 
-            businessList.innerHTML = `
-                <div class="empty-message">
-
-                    <span>🏪</span>
-
-                    <h3>
-                        No hay negocios disponibles.
-                    </h3>
-
-                    <p>
-                        Supabase respondió correctamente,
-                        pero no devolvió negocios activos.
-                    </p>
-
-                </div>
-            `;
+            showBusinessMessage(
+                "No hay negocios disponibles.",
+                "Supabase respondió correctamente, pero no encontró negocios activos.",
+                "🏪"
+            );
 
             return;
         }
 
 
-        renderBusinesses(data);
+        renderBusinesses(
+            data
+        );
 
 
     } catch (error) {
 
+        clearTimeout(
+            timeout
+        );
+
+
         console.error(
-            "PanchGo ERROR BUSINESSES:",
+            "PanchGo ERROR:",
             error
         );
 
 
-        businessList.innerHTML = `
-            <div class="empty-message">
+        if (
+            error.name ===
+            "AbortError"
+        ) {
 
-                <span>⚠️</span>
+            showBusinessMessage(
+                "Supabase no respondió.",
+                "La conexión tardó más de 8 segundos. El navegador canceló la solicitud.",
+                "⏱️"
+            );
 
-                <h3>
-                    Error al cargar negocios.
-                </h3>
+            return;
+        }
 
-                <p>
-                    ${error.message}
-                </p>
 
-            </div>
-        `;
+        showBusinessMessage(
+            "Error al cargar negocios.",
+            error.message,
+            "⚠️"
+        );
 
     }
 
@@ -281,6 +405,10 @@ function renderBusinesses(
 
     if (!businessList) {
 
+        console.error(
+            "PanchGo: no existe .business-list"
+        );
+
         return;
     }
 
@@ -299,10 +427,6 @@ function renderBusinesses(
 
             button.className =
                 "business-card";
-
-
-            button.businessData =
-                business;
 
 
             button.innerHTML = `
@@ -373,6 +497,7 @@ async function openBusiness(
     selectedBusiness =
         business.name;
 
+
     selectedBusinessData =
         business;
 
@@ -388,6 +513,7 @@ async function openBusiness(
 
 
     productGrid.innerHTML = `
+
         <div class="empty-message">
 
             <span>⏳</span>
@@ -401,6 +527,7 @@ async function openBusiness(
             </p>
 
         </div>
+
     `;
 
 
@@ -408,12 +535,6 @@ async function openBusiness(
         behavior: "smooth"
     });
 
-
-    /*
-       Todavía no modificamos la consulta de productos.
-       Primero necesitamos conseguir que los negocios
-       aparezcan correctamente.
-    */
 
     await loadProducts(
         business
@@ -431,6 +552,7 @@ async function loadProducts(
 ) {
 
     productGrid.innerHTML = `
+
         <div class="empty-message">
 
             <span>🍽️</span>
@@ -440,11 +562,13 @@ async function loadProducts(
             </h3>
 
             <p>
-                Primero estamos terminando
-                la conexión de productos.
+                La conexión de negocios ya está
+                funcionando. La conexión de productos
+                se configurará después.
             </p>
 
         </div>
+
     `;
 
 }
@@ -455,7 +579,6 @@ async function loadProducts(
 ========================================================= */
 
 function addToCart(
-    product,
     productId,
     productName,
     productPrice
@@ -489,7 +612,7 @@ function addToCart(
                 productName,
 
             price:
-                productPrice,
+                Number(productPrice),
 
             quantity:
                 1,
@@ -497,10 +620,7 @@ function addToCart(
             business:
                 selectedBusinessData
                     ? selectedBusinessData.name
-                    : "Negocio",
-
-            businessId:
-                null
+                    : "Negocio"
 
         });
 
@@ -601,9 +721,7 @@ function updateCart() {
                     </div>
 
 
-                    <div
-                        class="cart-item-controls"
-                    >
+                    <div class="cart-item-controls">
 
                         <button
                             class="quantity-button"
@@ -707,7 +825,7 @@ function updateCart() {
 
 
 /* =========================================================
-   CANTIDAD
+   CAMBIAR CANTIDAD
 ========================================================= */
 
 function changeQuantity(
@@ -807,123 +925,150 @@ function showStores() {
 }
 
 
-foodButton.addEventListener(
-    "click",
-    showBusinesses
-);
+if (foodButton) {
 
-heroFoodButton.addEventListener(
-    "click",
-    showBusinesses
-);
+    foodButton.addEventListener(
+        "click",
+        showBusinesses
+    );
 
-storesButton.addEventListener(
-    "click",
-    showStores
-);
+}
 
-heroStoreButton.addEventListener(
-    "click",
-    showStores
-);
+
+if (heroFoodButton) {
+
+    heroFoodButton.addEventListener(
+        "click",
+        showBusinesses
+    );
+
+}
+
+
+if (storesButton) {
+
+    storesButton.addEventListener(
+        "click",
+        showStores
+    );
+
+}
+
+
+if (heroStoreButton) {
+
+    heroStoreButton.addEventListener(
+        "click",
+        showStores
+    );
+
+}
 
 
 /* =========================================================
    CARRITO
 ========================================================= */
 
-cartButton.addEventListener(
-    "click",
-    function () {
+if (cartButton) {
 
-        cartSection.scrollIntoView({
-            behavior: "smooth"
-        });
+    cartButton.addEventListener(
+        "click",
+        function () {
 
-    }
-);
+            cartSection.scrollIntoView({
+                behavior: "smooth"
+            });
+
+        }
+    );
+
+}
 
 
 /* =========================================================
    CONFIRMAR PEDIDO
 ========================================================= */
 
-sendOrderButton.addEventListener(
-    "click",
-    function () {
+if (sendOrderButton) {
 
-        if (
-            cart.length === 0
-        ) {
+    sendOrderButton.addEventListener(
+        "click",
+        function () {
 
-            alert(
-                "Agrega al menos un producto."
-            );
+            if (
+                cart.length === 0
+            ) {
 
-            return;
+                alert(
+                    "Agrega al menos un producto."
+                );
+
+                return;
+            }
+
+
+            if (
+                !customerName.value.trim()
+            ) {
+
+                alert(
+                    "Escribe tu nombre."
+                );
+
+                customerName.focus();
+
+                return;
+            }
+
+
+            if (
+                !customerPhone.value.trim()
+            ) {
+
+                alert(
+                    "Escribe tu teléfono."
+                );
+
+                customerPhone.focus();
+
+                return;
+            }
+
+
+            if (
+                !customerAddress.value.trim()
+            ) {
+
+                alert(
+                    "Escribe tu dirección."
+                );
+
+                customerAddress.focus();
+
+                return;
+            }
+
+
+            if (
+                !paymentMethod.value
+            ) {
+
+                alert(
+                    "Selecciona una forma de pago."
+                );
+
+                paymentMethod.focus();
+
+                return;
+            }
+
+
+            createOrderPreview();
+
         }
+    );
 
-
-        if (
-            !customerName.value.trim()
-        ) {
-
-            alert(
-                "Escribe tu nombre."
-            );
-
-            customerName.focus();
-
-            return;
-        }
-
-
-        if (
-            !customerPhone.value.trim()
-        ) {
-
-            alert(
-                "Escribe tu teléfono."
-            );
-
-            customerPhone.focus();
-
-            return;
-        }
-
-
-        if (
-            !customerAddress.value.trim()
-        ) {
-
-            alert(
-                "Escribe tu dirección."
-            );
-
-            customerAddress.focus();
-
-            return;
-        }
-
-
-        if (
-            !paymentMethod.value
-        ) {
-
-            alert(
-                "Selecciona una forma de pago."
-            );
-
-            paymentMethod.focus();
-
-            return;
-        }
-
-
-        createOrderPreview();
-
-    }
-);
+}
 
 
 /* =========================================================
@@ -970,6 +1115,7 @@ function createOrderPreview() {
         function (item) {
 
             productsHTML += `
+
                 <p>
                     ${item.quantity}
                     ×
@@ -980,10 +1126,264 @@ function createOrderPreview() {
                         item.quantity
                     ).toFixed(2)}
                 </p>
+
             `;
 
         }
     );
 
 
-    orderPreview.inner
+    orderPreview.innerHTML = `
+
+        <div class="order-summary">
+
+            <h3>
+                ${cart[0].business}
+            </h3>
+
+            ${productsHTML}
+
+            <hr>
+
+            <p>
+                <strong>
+                    Productos:
+                </strong>
+                $${subtotal.toFixed(2)}
+            </p>
+
+            <p>
+                <strong>
+                    Envío:
+                </strong>
+                $${delivery.toFixed(2)}
+            </p>
+
+            <p>
+                <strong>
+                    Total:
+                </strong>
+                $${total.toFixed(2)}
+            </p>
+
+            <hr>
+
+            <p>
+                <strong>
+                    Cliente:
+                </strong>
+                ${customerName.value}
+            </p>
+
+            <p>
+                <strong>
+                    Teléfono:
+                </strong>
+                ${customerPhone.value}
+            </p>
+
+            <p>
+                <strong>
+                    Dirección:
+                </strong>
+                ${customerAddress.value}
+            </p>
+
+            <p>
+                <strong>
+                    Pago:
+                </strong>
+                ${paymentMethod.value}
+            </p>
+
+        </div>
+
+    `;
+
+
+    orderModal.classList.add(
+        "active"
+    );
+
+}
+
+
+/* =========================================================
+   WHATSAPP
+========================================================= */
+
+if (whatsappOrderButton) {
+
+    whatsappOrderButton.addEventListener(
+        "click",
+        function () {
+
+            if (
+                cart.length === 0
+            ) {
+
+                return;
+            }
+
+
+            const subtotal =
+                cart.reduce(
+                    function (
+                        total,
+                        item
+                    ) {
+
+                        return (
+                            total +
+                            (
+                                item.price *
+                                item.quantity
+                            )
+                        );
+
+                    },
+                    0
+                );
+
+
+            const delivery =
+                20;
+
+
+            const total =
+                subtotal +
+                delivery;
+
+
+            let message =
+                "🛵 *NUEVO PEDIDO PANCHGO*\n\n";
+
+
+            message +=
+                "*Negocio:* " +
+                cart[0].business +
+                "\n\n";
+
+
+            message +=
+                "*Productos:*\n";
+
+
+            cart.forEach(
+                function (item) {
+
+                    message +=
+                        item.quantity +
+                        " × " +
+                        item.name +
+                        " - $" +
+                        (
+                            item.price *
+                            item.quantity
+                        ).toFixed(2) +
+                        "\n";
+
+                }
+            );
+
+
+            message +=
+                "\n*Productos:* $" +
+                subtotal.toFixed(2);
+
+            message +=
+                "\n*Envío:* $" +
+                delivery.toFixed(2);
+
+            message +=
+                "\n*TOTAL:* $" +
+                total.toFixed(2);
+
+            message +=
+                "\n\n*Cliente:* " +
+                customerName.value;
+
+            message +=
+                "\n*Teléfono:* " +
+                customerPhone.value;
+
+            message +=
+                "\n*Dirección:* " +
+                customerAddress.value;
+
+            message +=
+                "\n*Forma de pago:* " +
+                paymentMethod.value;
+
+
+            const whatsappNumber =
+                "5210000000000";
+
+
+            const whatsappURL =
+                "https://wa.me/" +
+                whatsappNumber +
+                "?text=" +
+                encodeURIComponent(
+                    message
+                );
+
+
+            window.open(
+                whatsappURL,
+                "_blank"
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   CERRAR MODAL
+========================================================= */
+
+if (closeOrderModal) {
+
+    closeOrderModal.addEventListener(
+        "click",
+        function () {
+
+            orderModal.classList.remove(
+                "active"
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   NEGOCIOS
+========================================================= */
+
+if (joinBusinessButton) {
+
+    joinBusinessButton.addEventListener(
+        "click",
+        function () {
+
+            alert(
+                "Próximamente podrás registrar tu negocio en PanchGo."
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   INICIO
+========================================================= */
+
+updateCart();
+
+loadBusinesses();
