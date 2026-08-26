@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#111111">
     <title>PanchGo — San Pancho se mueve</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -38,6 +39,7 @@
             </p>
 
             <div class="hero-buttons">
+
                 <button class="primary-button" id="heroFoodButton">
                     🍔 Explorar negocios
                 </button>
@@ -45,11 +47,13 @@
                 <button class="secondary-button" id="heroStoreButton">
                     🛍️ Ver tiendas
                 </button>
+
             </div>
 
         </div>
 
     </section>
+
 
     <section class="categories">
 
@@ -62,129 +66,86 @@
         <div class="category-grid">
 
             <button class="category-card" id="foodButton">
+
                 <span class="category-icon">🍔</span>
+
                 <strong>Comida</strong>
-                <span>Restaurantes y comida local</span>
+
+                <span>
+                    Restaurantes y comida local
+                </span>
+
             </button>
 
+
             <button class="category-card" id="storesButton">
+
                 <span class="category-icon">🛍️</span>
+
                 <strong>Tiendas</strong>
-                <span>Productos y negocios locales</span>
+
+                <span>
+                    Productos y negocios locales
+                </span>
+
             </button>
 
         </div>
 
     </section>
+
 
     <section class="business-section" id="businessSection">
 
         <div class="section-heading">
+
             <div>
-                <span class="section-tag">DESCUBRE</span>
-                <h2>Negocios locales</h2>
+
+                <span class="section-tag">
+                    DESCUBRE
+                </span>
+
+                <h2>
+                    Negocios locales
+                </h2>
+
             </div>
+
         </div>
 
-        <div class="business-list">
+        <div class="business-list" id="businessList">
 
-            <!-- BIRRIA HOME -->
+            <div class="empty-message">
 
-            <button
-                class="business-card"
-                id="birriaHomeButton"
-                data-business="birria"
-            >
+                <span>⏳</span>
 
-                <div class="business-icon">🌮</div>
+                <h3>Cargando negocios...</h3>
 
-                <div class="business-info">
-                    <h3>BirriaHome</h3>
+                <p>
+                    Estamos buscando los negocios disponibles.
+                </p>
 
-                    <p>
-                        Birria y comida • San Francisco del Rincón
-                    </p>
-
-                    <span class="delivery-label">
-                        🛵 Entrega a domicilio
-                    </span>
-                </div>
-
-                <span class="business-arrow">›</span>
-
-            </button>
-
-
-            <!-- CHOCOMILES -->
-
-            <button
-                class="business-card"
-                id="chocomilesButton"
-                data-business="chocomiles"
-            >
-
-                <div class="business-icon">🥤</div>
-
-                <div class="business-info">
-                    <h3>Chocomiles</h3>
-
-                    <p>
-                        Chocomiles y elotes • San Francisco del Rincón
-                    </p>
-
-                    <span class="delivery-label">
-                        🛵 Entrega a domicilio
-                    </span>
-                </div>
-
-                <span class="business-arrow">›</span>
-
-            </button>
-
-
-            <!-- TERCER NEGOCIO -->
-
-            <button
-                class="business-card"
-                id="business3Button"
-                data-business="negocio3"
-            >
-
-                <div class="business-icon">🏪</div>
-
-                <div class="business-info">
-                    <h3>Nuevo negocio</h3>
-
-                    <p>
-                        Próximamente • San Francisco del Rincón
-                    </p>
-
-                    <span class="delivery-label">
-                        🛵 Entrega a domicilio
-                    </span>
-                </div>
-
-                <span class="business-arrow">›</span>
-
-            </button>
+            </div>
 
         </div>
 
     </section>
 
-
-    <!-- PRODUCTOS -->
 
     <section class="products-section" id="productsSection">
 
         <div class="section-heading">
 
             <div>
-                <span class="section-tag">MENÚ</span>
+
+                <span class="section-tag">
+                    MENÚ
+                </span>
 
                 <h2 id="productsBusinessName">
                     Selecciona un negocio
                 </h2>
+
             </div>
 
         </div>
@@ -199,55 +160,89 @@
         <div
             class="product-grid"
             id="productGrid"
-        >
-        </div>
+        ></div>
 
     </section>
 
 
-    <!-- CARRITO -->
-
     <section class="cart-section" id="cartSection">
 
-        <span class="section-tag">TU PEDIDO</span>
+        <span class="section-tag">
+            TU PEDIDO
+        </span>
 
-        <h2>Carrito</h2>
+        <h2>
+            Carrito
+        </h2>
 
         <div id="cartItems">
 
             <div class="empty-cart">
+
                 🛒
-                <h3>Tu carrito está vacío</h3>
+
+                <h3>
+                    Tu carrito está vacío
+                </h3>
 
                 <p>
-                    Agrega productos de un negocio para comenzar tu pedido.
+                    Agrega productos de un negocio
+                    para comenzar tu pedido.
                 </p>
+
             </div>
 
         </div>
+
 
         <div class="cart-summary">
 
             <div>
-                <span>Productos</span>
-                <strong id="cartSubtotal">$0.00</strong>
+
+                <span>
+                    Productos
+                </span>
+
+                <strong id="cartSubtotal">
+                    $0.00
+                </strong>
+
             </div>
+
 
             <div>
-                <span>Envío</span>
-                <strong id="deliveryCost">$0.00</strong>
+
+                <span>
+                    Envío
+                </span>
+
+                <strong id="deliveryCost">
+                    $0.00
+                </strong>
+
             </div>
 
+
             <div class="cart-total-row">
-                <span>Total</span>
-                <strong id="cartTotal">$0.00</strong>
+
+                <span>
+                    Total
+                </span>
+
+                <strong id="cartTotal">
+                    $0.00
+                </strong>
+
             </div>
 
         </div>
 
+
         <div class="order-form">
 
-            <h3>Datos de entrega</h3>
+            <h3>
+                Datos de entrega
+            </h3>
 
             <input
                 type="text"
@@ -267,6 +262,7 @@
                 rows="3"
             ></textarea>
 
+
             <select id="paymentMethod">
 
                 <option value="">
@@ -283,6 +279,7 @@
 
             </select>
 
+
             <button
                 class="primary-button"
                 id="sendOrderButton"
@@ -295,19 +292,25 @@
     </section>
 
 
-    <!-- TIENDAS -->
-
     <section class="store-section" id="storeSection">
 
-        <span class="section-tag">PRÓXIMAMENTE</span>
+        <span class="section-tag">
+            PRÓXIMAMENTE
+        </span>
 
-        <h2>Tiendas y productos</h2>
+        <h2>
+            Tiendas y productos
+        </h2>
 
         <div class="empty-message">
 
-            <span>🛍️</span>
+            <span>
+                🛍️
+            </span>
 
-            <h3>Estamos preparando algo grande.</h3>
+            <h3>
+                Estamos preparando algo grande.
+            </h3>
 
             <p>
                 Muy pronto podrás encontrar más tiendas,
@@ -319,38 +322,72 @@
     </section>
 
 
-    <!-- COMO FUNCIONA -->
-
     <section class="welcome-section">
 
-        <span class="section-tag">PANCHGO</span>
+        <span class="section-tag">
+            PANCHGO
+        </span>
 
-        <h2>¿Cómo funciona?</h2>
+        <h2>
+            ¿Cómo funciona?
+        </h2>
 
         <p class="section-subtitle">
             Pedir será cada vez más fácil.
         </p>
 
+
         <div class="steps">
 
             <div class="step">
-                <strong>1</strong>
-                <p>Elige un negocio</p>
+
+                <strong>
+                    1
+                </strong>
+
+                <p>
+                    Elige un negocio
+                </p>
+
             </div>
 
-            <div class="step">
-                <strong>2</strong>
-                <p>Selecciona tus productos</p>
-            </div>
 
             <div class="step">
-                <strong>3</strong>
-                <p>Indica dónde entregar</p>
+
+                <strong>
+                    2
+                </strong>
+
+                <p>
+                    Selecciona tus productos
+                </p>
+
             </div>
 
+
             <div class="step">
-                <strong>4</strong>
-                <p>Recibe tu pedido</p>
+
+                <strong>
+                    3
+                </strong>
+
+                <p>
+                    Indica dónde entregar
+                </p>
+
+            </div>
+
+
+            <div class="step">
+
+                <strong>
+                    4
+                </strong>
+
+                <p>
+                    Recibe tu pedido
+                </p>
+
             </div>
 
         </div>
@@ -358,11 +395,11 @@
     </section>
 
 
-    <!-- NEGOCIOS -->
-
     <section class="join-section">
 
-        <span class="section-tag">¿TIENES UN NEGOCIO?</span>
+        <span class="section-tag">
+            ¿TIENES UN NEGOCIO?
+        </span>
 
         <h2>
             Tu negocio también puede ser parte de PanchGo.
@@ -387,7 +424,9 @@
 
 <footer>
 
-    <p><strong>PanchGo</strong></p>
+    <p>
+        <strong>PanchGo</strong>
+    </p>
 
     <p>
         San Pancho se mueve. 🛵
@@ -399,10 +438,6 @@
 
 </footer>
 
-
-<!-- =========================
-     MODAL DE CONFIRMACIÓN
-========================= -->
 
 <div
     class="modal"
@@ -426,8 +461,7 @@
             Confirmar pedido
         </h2>
 
-        <div id="orderPreview">
-        </div>
+        <div id="orderPreview"></div>
 
         <button
             class="primary-button"
@@ -440,6 +474,10 @@
 
 </div>
 
+
+<!-- Supabase -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="script.js"></script>
 
