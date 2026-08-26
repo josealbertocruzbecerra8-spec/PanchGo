@@ -1,14 +1,25 @@
 /* =========================================================
-   PANCHGO — CONEXIÓN SUPABASE
+   PANCHGO
+   SCRIPT COMPLETO + SUPABASE
 ========================================================= */
 
-const SUPABASE_URL = "https://vciekecvbqvlbavxhmfz.supabase.co/rest/v1/";
-const SUPABASE_KEY = "sb_publishable_1wRntDky8YlSGLmynI8O5Q_lNSbWMbu";
 
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL =
+    "PEGA_AQUI_TU_URL_DE_SUPABASE";
+
+const SUPABASE_KEY =
+    "PEGA_AQUI_TU_CB_PUBLISHABLE";
+
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
 
 /* =========================================================
@@ -16,7 +27,9 @@ const supabaseClient = window.supabase.createClient(
 ========================================================= */
 
 let cart = [];
+
 let selectedBusiness = null;
+
 let selectedBusinessData = null;
 
 
@@ -24,28 +37,52 @@ let selectedBusinessData = null;
    ELEMENTOS
 ========================================================= */
 
-const cartButton = document.getElementById("cartButton");
-const cartCount = document.getElementById("cartCount");
+const cartButton =
+    document.getElementById("cartButton");
 
-const foodButton = document.getElementById("foodButton");
-const storesButton = document.getElementById("storesButton");
+const cartCount =
+    document.getElementById("cartCount");
 
-const heroFoodButton = document.getElementById("heroFoodButton");
-const heroStoreButton = document.getElementById("heroStoreButton");
 
-const businessSection = document.getElementById("businessSection");
-const storeSection = document.getElementById("storeSection");
+const foodButton =
+    document.getElementById("foodButton");
 
-const productsSection = document.getElementById("productsSection");
+const storesButton =
+    document.getElementById("storesButton");
+
+
+const heroFoodButton =
+    document.getElementById("heroFoodButton");
+
+const heroStoreButton =
+    document.getElementById("heroStoreButton");
+
+
+const businessSection =
+    document.getElementById("businessSection");
+
+const storeSection =
+    document.getElementById("storeSection");
+
+
+const productsSection =
+    document.getElementById("productsSection");
 
 const productsBusinessName =
-    document.getElementById("productsBusinessName");
+    document.getElementById(
+        "productsBusinessName"
+    );
 
 const productsBusinessDescription =
-    document.getElementById("productsBusinessDescription");
+    document.getElementById(
+        "productsBusinessDescription"
+    );
 
 const productGrid =
-    document.getElementById("productGrid");
+    document.getElementById(
+        "productGrid"
+    );
+
 
 const cartSection =
     document.getElementById("cartSection");
@@ -53,102 +90,143 @@ const cartSection =
 const cartItems =
     document.getElementById("cartItems");
 
+
 const cartSubtotal =
-    document.getElementById("cartSubtotal");
+    document.getElementById(
+        "cartSubtotal"
+    );
 
 const deliveryCost =
-    document.getElementById("deliveryCost");
+    document.getElementById(
+        "deliveryCost"
+    );
 
 const cartTotal =
-    document.getElementById("cartTotal");
+    document.getElementById(
+        "cartTotal"
+    );
+
 
 const customerName =
-    document.getElementById("customerName");
+    document.getElementById(
+        "customerName"
+    );
 
 const customerPhone =
-    document.getElementById("customerPhone");
+    document.getElementById(
+        "customerPhone"
+    );
 
 const customerAddress =
-    document.getElementById("customerAddress");
+    document.getElementById(
+        "customerAddress"
+    );
 
 const paymentMethod =
-    document.getElementById("paymentMethod");
+    document.getElementById(
+        "paymentMethod"
+    );
+
 
 const sendOrderButton =
-    document.getElementById("sendOrderButton");
+    document.getElementById(
+        "sendOrderButton"
+    );
+
 
 const orderModal =
-    document.getElementById("orderModal");
+    document.getElementById(
+        "orderModal"
+    );
 
 const orderPreview =
-    document.getElementById("orderPreview");
+    document.getElementById(
+        "orderPreview"
+    );
 
 const closeOrderModal =
-    document.getElementById("closeOrderModal");
+    document.getElementById(
+        "closeOrderModal"
+    );
 
 const whatsappOrderButton =
-    document.getElementById("whatsappOrderButton");
+    document.getElementById(
+        "whatsappOrderButton"
+    );
+
 
 const joinBusinessButton =
-    document.getElementById("joinBusinessButton");
+    document.getElementById(
+        "joinBusinessButton"
+    );
 
 
 /* =========================================================
-   CARGAR NEGOCIOS DESDE SUPABASE
+   CARGAR NEGOCIOS
 ========================================================= */
 
 async function loadBusinesses() {
 
     try {
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
                 .from("Businesses")
                 .select("*")
                 .order("name");
 
+
         if (error) {
-            console.error("Error cargando Businesses:", error);
+
+            console.error(
+                "ERROR BUSINESSES:",
+                error
+            );
+
             throw error;
         }
 
-        if (!data || data.length === 0) {
 
-            businessSection.innerHTML = `
-                <div class="section-heading">
-                    <div>
-                        <span class="section-tag">DESCUBRE</span>
-                        <h2>Negocios locales</h2>
-                    </div>
-                </div>
+        renderBusinesses(
+            data || []
+        );
 
-                <p>
-                    Todavía no hay negocios registrados.
-                </p>
-            `;
-
-            return;
-        }
-
-        renderBusinesses(data);
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "No se pudieron cargar los negocios:",
+            error
+        );
 
-        businessSection.innerHTML = `
-            <div class="section-heading">
-                <div>
-                    <span class="section-tag">DESCUBRE</span>
-                    <h2>Negocios locales</h2>
+
+        const businessList =
+            document.querySelector(
+                ".business-list"
+            );
+
+
+        if (businessList) {
+
+            businessList.innerHTML = `
+                <div class="empty-message">
+
+                    <span>⚠️</span>
+
+                    <h3>
+                        No pudimos cargar los negocios.
+                    </h3>
+
+                    <p>
+                        Revisa la conexión con Supabase.
+                    </p>
+
                 </div>
-            </div>
-
-            <p>
-                No pudimos cargar los negocios.
-                Revisa la conexión con Supabase.
-            </p>
-        `;
+            `;
+        }
     }
 }
 
@@ -157,71 +235,119 @@ async function loadBusinesses() {
    MOSTRAR NEGOCIOS
 ========================================================= */
 
-function renderBusinesses(businesses) {
+function renderBusinesses(
+    businesses
+) {
 
     const businessList =
-        businessSection.querySelector(".business-list");
+        document.querySelector(
+            ".business-list"
+        );
+
 
     if (!businessList) {
+
         return;
     }
 
+
     businessList.innerHTML = "";
 
-    businesses.forEach(function (business) {
 
-        const button =
-            document.createElement("button");
+    if (
+        !businesses ||
+        businesses.length === 0
+    ) {
 
-        button.className = "business-card";
+        businessList.innerHTML = `
+            <div class="empty-message">
 
-        /*
-            Tu tabla Businesses utiliza "id"
-            como identificador.
-        */
-
-        button.dataset.businessId =
-            business.id;
-
-        button.innerHTML = `
-            <div class="business-icon">
-                🏪
-            </div>
-
-            <div class="business-info">
+                <span>🏪</span>
 
                 <h3>
-                    ${business.name || "Negocio"}
+                    No hay negocios todavía.
                 </h3>
 
                 <p>
-                    ${business.description || "Negocio local"}
+                    Próximamente habrá negocios disponibles.
                 </p>
 
-                <span class="delivery-label">
-                    🛵 Entrega a domicilio
-                </span>
-
             </div>
-
-            <span class="business-arrow">
-                ›
-            </span>
         `;
 
-        button.addEventListener(
-            "click",
-            function () {
+        return;
+    }
 
-                openBusiness(
-                    business
+
+    businesses.forEach(
+        function (business) {
+
+            const button =
+                document.createElement(
+                    "button"
                 );
 
-            }
-        );
 
-        businessList.appendChild(button);
-    });
+            button.className =
+                "business-card";
+
+
+            button.dataset.businessId =
+                business.id;
+
+
+            button.innerHTML = `
+
+                <div class="business-icon">
+                    🏪
+                </div>
+
+                <div class="business-info">
+
+                    <h3>
+                        ${
+                            business.name ||
+                            "Negocio"
+                        }
+                    </h3>
+
+                    <p>
+                        ${
+                            business.description ||
+                            "Negocio local"
+                        }
+                    </p>
+
+                    <span class="delivery-label">
+                        🛵 Entrega a domicilio
+                    </span>
+
+                </div>
+
+                <span class="business-arrow">
+                    ›
+                </span>
+            `;
+
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    openBusiness(
+                        business
+                    );
+
+                }
+            );
+
+
+            businessList.appendChild(
+                button
+            );
+
+        }
+    );
 }
 
 
@@ -229,30 +355,41 @@ function renderBusinesses(businesses) {
    ABRIR NEGOCIO
 ========================================================= */
 
-async function openBusiness(business) {
+async function openBusiness(
+    business
+) {
 
     selectedBusiness =
         business.id;
 
+
     selectedBusinessData =
         business;
 
+
     productsBusinessName.textContent =
-        business.name || "Negocio";
+        business.name ||
+        "Negocio";
+
 
     productsBusinessDescription.textContent =
         business.description ||
         "Productos disponibles";
 
+
     productGrid.innerHTML = `
+
         <p>
             Cargando productos...
         </p>
+
     `;
+
 
     productsSection.scrollIntoView({
         behavior: "smooth"
     });
+
 
     await loadProducts(
         business.id
@@ -264,39 +401,70 @@ async function openBusiness(business) {
    CARGAR PRODUCTOS
 ========================================================= */
 
-async function loadProducts(businessId) {
+async function loadProducts(
+    businessId
+) {
 
     try {
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
                 .from("Products")
                 .select("*")
-                .eq("Businesses_id", businessId)
-                .eq("Active", true)
+                .eq(
+                    "Businesses_id",
+                    businessId
+                )
+                .eq(
+                    "Active",
+                    true
+                )
                 .order("name");
 
+
         if (error) {
+
             console.error(
-                "Error cargando Products:",
+                "ERROR PRODUCTS:",
                 error
             );
 
             throw error;
         }
 
+
         renderProducts(
             data || []
         );
 
+
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "No se pudieron cargar los productos:",
+            error
+        );
+
 
         productGrid.innerHTML = `
-            <p>
-                No pudimos cargar los productos.
-            </p>
+
+            <div class="empty-message">
+
+                <span>⚠️</span>
+
+                <h3>
+                    No pudimos cargar los productos.
+                </h3>
+
+                <p>
+                    Revisa la conexión con Supabase.
+                </p>
+
+            </div>
+
         `;
     }
 }
@@ -306,13 +474,20 @@ async function loadProducts(businessId) {
    MOSTRAR PRODUCTOS
 ========================================================= */
 
-function renderProducts(products) {
+function renderProducts(
+    products
+) {
 
     productGrid.innerHTML = "";
 
-    if (products.length === 0) {
+
+    if (
+        !products ||
+        products.length === 0
+    ) {
 
         productGrid.innerHTML = `
+
             <div class="empty-message">
 
                 <span>🍽️</span>
@@ -326,77 +501,121 @@ function renderProducts(products) {
                 </p>
 
             </div>
+
         `;
 
         return;
     }
 
-    products.forEach(function (product) {
 
-        const productCard =
-            document.createElement("div");
+    products.forEach(
+        function (product) {
 
-        productCard.className =
-            "product-card";
+            const productCard =
+                document.createElement(
+                    "div"
+                );
 
-        productCard.innerHTML = `
 
-            <div class="product-info">
+            productCard.className =
+                "product-card";
 
-                <h3>
-                    ${product.name || "Producto"}
-                </h3>
 
-                <p>
-                    ${product.Description || ""}
-                </p>
+            const productId =
+                product.Id;
 
-                <strong>
-                    $${Number(product.Price || 0).toFixed(2)}
-                </strong>
 
-            </div>
+            const productName =
+                product.name ||
+                "Producto";
 
-            <button
-                class="primary-button add-product-button"
-            >
-                Agregar
-            </button>
-        `;
 
-        const addButton =
-            productCard.querySelector(
-                ".add-product-button"
+            const productDescription =
+                product.Description ||
+                "";
+
+
+            const productPrice =
+                Number(
+                    product.Price || 0
+                );
+
+
+            productCard.innerHTML = `
+
+                <div class="product-info">
+
+                    <h3>
+                        ${productName}
+                    </h3>
+
+                    <p>
+                        ${productDescription}
+                    </p>
+
+                    <strong>
+                        $${productPrice.toFixed(2)}
+                    </strong>
+
+                </div>
+
+
+                <button
+                    class="primary-button add-product-button"
+                >
+                    Agregar
+                </button>
+
+            `;
+
+
+            const addButton =
+                productCard.querySelector(
+                    ".add-product-button"
+                );
+
+
+            addButton.addEventListener(
+                "click",
+                function () {
+
+                    addToCart(
+                        product
+                    );
+
+                }
             );
 
-        addButton.addEventListener(
-            "click",
-            function () {
 
-                addToCart(product);
+            productGrid.appendChild(
+                productCard
+            );
 
-            }
-        );
-
-        productGrid.appendChild(
-            productCard
-        );
-    });
+        }
+    );
 }
 
 
 /* =========================================================
-   AGREGAR AL CARRITO
+   CARRITO
 ========================================================= */
 
-function addToCart(product) {
+function addToCart(
+    product
+) {
 
     const existingProduct =
-        cart.find(function (item) {
+        cart.find(
+            function (item) {
 
-            return item.id === product.Id;
+                return (
+                    item.id ===
+                    product.Id
+                );
 
-        });
+            }
+        );
+
 
     if (existingProduct) {
 
@@ -406,15 +625,19 @@ function addToCart(product) {
 
         cart.push({
 
-            id: product.Id,
+            id:
+                product.Id,
 
             name:
                 product.name,
 
             price:
-                Number(product.Price || 0),
+                Number(
+                    product.Price || 0
+                ),
 
-            quantity: 1,
+            quantity:
+                1,
 
             business:
                 selectedBusinessData.name,
@@ -423,9 +646,12 @@ function addToCart(product) {
                 selectedBusinessData.id
 
         });
+
     }
 
+
     updateCart();
+
 
     cartSection.scrollIntoView({
         behavior: "smooth"
@@ -441,21 +667,31 @@ function updateCart() {
 
     const count =
         cart.reduce(
-            function (total, item) {
+            function (
+                total,
+                item
+            ) {
 
-                return total +
-                    item.quantity;
+                return (
+                    total +
+                    item.quantity
+                );
 
             },
             0
         );
 
+
     cartCount.textContent =
         count;
 
-    if (cart.length === 0) {
+
+    if (
+        cart.length === 0
+    ) {
 
         cartItems.innerHTML = `
+
             <div class="empty-cart">
 
                 🛒
@@ -470,107 +706,142 @@ function updateCart() {
                 </p>
 
             </div>
+
         `;
 
     } else {
 
         cartItems.innerHTML = "";
 
-        cart.forEach(function (item) {
 
-            const itemElement =
-                document.createElement("div");
+        cart.forEach(
+            function (item) {
 
-            itemElement.className =
-                "cart-item";
+                const itemElement =
+                    document.createElement(
+                        "div"
+                    );
 
-            itemElement.innerHTML = `
 
-                <div>
+                itemElement.className =
+                    "cart-item";
 
-                    <strong>
-                        ${item.name}
-                    </strong>
 
-                    <p>
-                        $${item.price.toFixed(2)}
-                        × ${item.quantity}
-                    </p>
+                itemElement.innerHTML = `
 
-                </div>
+                    <div>
 
-                <div class="cart-item-controls">
+                        <strong>
+                            ${item.name}
+                        </strong>
 
-                    <button
-                        class="quantity-button"
-                        data-id="${item.id}"
-                        data-action="minus"
+                        <p>
+                            $${item.price.toFixed(2)}
+                            × ${item.quantity}
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        class="cart-item-controls"
                     >
-                        −
-                    </button>
 
-                    <span>
-                        ${item.quantity}
-                    </span>
+                        <button
+                            class="quantity-button"
+                            data-id="${item.id}"
+                            data-action="minus"
+                        >
+                            −
+                        </button>
 
-                    <button
-                        class="quantity-button"
-                        data-id="${item.id}"
-                        data-action="plus"
-                    >
-                        +
-                    </button>
+                        <span>
+                            ${item.quantity}
+                        </span>
 
-                </div>
-            `;
+                        <button
+                            class="quantity-button"
+                            data-id="${item.id}"
+                            data-action="plus"
+                        >
+                            +
+                        </button>
 
-            cartItems.appendChild(
-                itemElement
-            );
-        });
+                    </div>
 
-        document
-            .querySelectorAll(".quantity-button")
-            .forEach(function (button) {
+                `;
 
-                button.addEventListener(
-                    "click",
-                    function () {
 
-                        changeQuantity(
-                            button.dataset.id,
-                            button.dataset.action
-                        );
-
-                    }
+                cartItems.appendChild(
+                    itemElement
                 );
 
-            });
+            }
+        );
+
+
+        document
+            .querySelectorAll(
+                ".quantity-button"
+            )
+            .forEach(
+                function (button) {
+
+                    button.addEventListener(
+                        "click",
+                        function () {
+
+                            changeQuantity(
+                                button.dataset.id,
+                                button.dataset.action
+                            );
+
+                        }
+                    );
+
+                }
+            );
     }
+
 
     const subtotal =
         cart.reduce(
-            function (total, item) {
+            function (
+                total,
+                item
+            ) {
 
-                return total +
-                    item.price *
-                    item.quantity;
+                return (
+                    total +
+                    (
+                        item.price *
+                        item.quantity
+                    )
+                );
 
             },
             0
         );
 
+
     const delivery =
-        cart.length > 0 ? 20 : 0;
+        cart.length > 0
+            ? 20
+            : 0;
+
 
     const total =
-        subtotal + delivery;
+        subtotal +
+        delivery;
+
 
     cartSubtotal.textContent =
         `$${subtotal.toFixed(2)}`;
 
+
     deliveryCost.textContent =
         `$${delivery.toFixed(2)}`;
+
 
     cartTotal.textContent =
         `$${total.toFixed(2)}`;
@@ -581,41 +852,63 @@ function updateCart() {
    CAMBIAR CANTIDAD
 ========================================================= */
 
-function changeQuantity(id, action) {
+function changeQuantity(
+    id,
+    action
+) {
 
     const item =
-        cart.find(function (product) {
+        cart.find(
+            function (product) {
 
-            return product.id === id;
+                return (
+                    product.id === id
+                );
 
-        });
+            }
+        );
+
 
     if (!item) {
+
         return;
     }
 
-    if (action === "plus") {
+
+    if (
+        action === "plus"
+    ) {
 
         item.quantity += 1;
-
     }
 
-    if (action === "minus") {
+
+    if (
+        action === "minus"
+    ) {
 
         item.quantity -= 1;
 
-        if (item.quantity <= 0) {
+
+        if (
+            item.quantity <= 0
+        ) {
 
             cart =
                 cart.filter(
-                    function (product) {
+                    function (
+                        product
+                    ) {
 
-                        return product.id !== id;
+                        return (
+                            product.id !== id
+                        );
 
                     }
                 );
         }
     }
+
 
     updateCart();
 }
@@ -630,8 +923,10 @@ function showBusinesses() {
     businessSection.style.display =
         "block";
 
+
     storeSection.style.display =
         "none";
+
 
     businessSection.scrollIntoView({
         behavior: "smooth"
@@ -644,6 +939,7 @@ function showStores() {
     storeSection.style.display =
         "block";
 
+
     storeSection.scrollIntoView({
         behavior: "smooth"
     });
@@ -655,15 +951,18 @@ foodButton.addEventListener(
     showBusinesses
 );
 
+
 heroFoodButton.addEventListener(
     "click",
     showBusinesses
 );
 
+
 storesButton.addEventListener(
     "click",
     showStores
 );
+
 
 heroStoreButton.addEventListener(
     "click",
@@ -672,7 +971,7 @@ heroStoreButton.addEventListener(
 
 
 /* =========================================================
-   CARRITO
+   BOTÓN CARRITO
 ========================================================= */
 
 cartButton.addEventListener(
@@ -688,14 +987,16 @@ cartButton.addEventListener(
 
 
 /* =========================================================
-   CREAR PEDIDO
+   CONFIRMAR PEDIDO
 ========================================================= */
 
 sendOrderButton.addEventListener(
     "click",
-    async function () {
+    function () {
 
-        if (cart.length === 0) {
+        if (
+            cart.length === 0
+        ) {
 
             alert(
                 "Agrega al menos un producto."
@@ -704,25 +1005,38 @@ sendOrderButton.addEventListener(
             return;
         }
 
-        if (!customerName.value.trim()) {
 
-            alert("Escribe tu nombre.");
+        if (
+            !customerName.value.trim()
+        ) {
+
+            alert(
+                "Escribe tu nombre."
+            );
 
             customerName.focus();
 
             return;
         }
 
-        if (!customerPhone.value.trim()) {
 
-            alert("Escribe tu teléfono.");
+        if (
+            !customerPhone.value.trim()
+        ) {
+
+            alert(
+                "Escribe tu teléfono."
+            );
 
             customerPhone.focus();
 
             return;
         }
 
-        if (!customerAddress.value.trim()) {
+
+        if (
+            !customerAddress.value.trim()
+        ) {
 
             alert(
                 "Escribe tu dirección."
@@ -733,7 +1047,10 @@ sendOrderButton.addEventListener(
             return;
         }
 
-        if (!paymentMethod.value) {
+
+        if (
+            !paymentMethod.value
+        ) {
 
             alert(
                 "Selecciona una forma de pago."
@@ -744,200 +1061,76 @@ sendOrderButton.addEventListener(
             return;
         }
 
-        await createOrder();
+
+        createOrderPreview();
     }
 );
 
 
 /* =========================================================
-   INSERTAR PEDIDO EN ORDERS
-========================================================= */
-
-async function createOrder() {
-
-    try {
-
-        sendOrderButton.disabled = true;
-
-        sendOrderButton.textContent =
-            "Guardando pedido...";
-
-        const subtotal =
-            cart.reduce(
-                function (total, item) {
-
-                    return total +
-                        item.price *
-                        item.quantity;
-
-                },
-                0
-            );
-
-        const delivery =
-            cart.length > 0 ? 20 : 0;
-
-        const total =
-            subtotal + delivery;
-
-
-        /*
-            IMPORTANTE:
-            Los nombres deben coincidir con
-            las columnas reales de Orders.
-
-            Si tu tabla utiliza nombres distintos,
-            aquí será donde los ajustaremos.
-        */
-
-        const orderData = {
-
-            customer_name:
-                customerName.value.trim(),
-
-            customer_phone:
-                customerPhone.value.trim(),
-
-            delivery_address:
-                customerAddress.value.trim(),
-
-            payment_method:
-                paymentMethod.value,
-
-            total:
-                total
-
-        };
-
-
-        const { data: order, error } =
-            await supabaseClient
-                .from("Orders")
-                .insert(orderData)
-                .select()
-                .single();
-
-
-        if (error) {
-
-            console.error(
-                "Error creando Orders:",
-                error
-            );
-
-            throw error;
-        }
-
-
-        /*
-            CREAR LOS ORDER ITEMS
-        */
-
-        const orderItems =
-            cart.map(function (item) {
-
-                return {
-
-                    "Order_id":
-                        order.id,
-
-                    "Product_id":
-                        item.id,
-
-                    "Quantity":
-                        item.quantity,
-
-                    "Unit_price":
-                        item.price
-
-                };
-
-            });
-
-
-        const {
-            error: itemsError
-        } =
-            await supabaseClient
-                .from("Order_items")
-                .insert(orderItems);
-
-
-        if (itemsError) {
-
-            console.error(
-                "Error creando Order_items:",
-                itemsError
-            );
-
-            throw itemsError;
-        }
-
-
-        createOrderPreview();
-
-        alert(
-            "Pedido guardado correctamente."
-        );
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(
-            "No pudimos guardar el pedido. Revisa la conexión con Supabase."
-        );
-
-    } finally {
-
-        sendOrderButton.disabled = false;
-
-        sendOrderButton.textContent =
-            "🛵 Confirmar pedido";
-    }
-}
-
-
-/* =========================================================
-   RESUMEN DEL PEDIDO
+   RESUMEN
 ========================================================= */
 
 function createOrderPreview() {
 
     const subtotal =
         cart.reduce(
-            function (total, item) {
+            function (
+                total,
+                item
+            ) {
 
-                return total +
-                    item.price *
-                    item.quantity;
+                return (
+                    total +
+                    (
+                        item.price *
+                        item.quantity
+                    )
+                );
 
             },
             0
         );
 
+
     const delivery =
-        cart.length > 0 ? 20 : 0;
+        cart.length > 0
+            ? 20
+            : 0;
+
 
     const total =
-        subtotal + delivery;
+        subtotal +
+        delivery;
+
 
     let productsHTML = "";
 
-    cart.forEach(function (item) {
 
-        productsHTML += `
-            <p>
-                ${item.quantity} ×
-                ${item.name}
-                —
-                $${(
-                    item.price *
-                    item.quantity
-                ).toFixed(2)}
-            </p>
-        `;
-    });
+    cart.forEach(
+        function (item) {
+
+            productsHTML += `
+
+                <p>
+
+                    ${item.quantity}
+                    ×
+                    ${item.name}
+
+                    —
+                    $${(
+                        item.price *
+                        item.quantity
+                    ).toFixed(2)}
+
+                </p>
+
+            `;
+
+        }
+    );
+
 
     orderPreview.innerHTML = `
 
@@ -955,6 +1148,7 @@ function createOrderPreview() {
                 <strong>
                     Productos:
                 </strong>
+
                 $${subtotal.toFixed(2)}
             </p>
 
@@ -962,6 +1156,7 @@ function createOrderPreview() {
                 <strong>
                     Envío:
                 </strong>
+
                 $${delivery.toFixed(2)}
             </p>
 
@@ -969,6 +1164,7 @@ function createOrderPreview() {
                 <strong>
                     Total:
                 </strong>
+
                 $${total.toFixed(2)}
             </p>
 
@@ -978,6 +1174,7 @@ function createOrderPreview() {
                 <strong>
                     Cliente:
                 </strong>
+
                 ${customerName.value}
             </p>
 
@@ -985,6 +1182,7 @@ function createOrderPreview() {
                 <strong>
                     Teléfono:
                 </strong>
+
                 ${customerPhone.value}
             </p>
 
@@ -992,6 +1190,7 @@ function createOrderPreview() {
                 <strong>
                     Dirección:
                 </strong>
+
                 ${customerAddress.value}
             </p>
 
@@ -999,11 +1198,14 @@ function createOrderPreview() {
                 <strong>
                     Pago:
                 </strong>
+
                 ${paymentMethod.value}
             </p>
 
         </div>
+
     `;
+
 
     orderModal.classList.add(
         "active"
@@ -1021,71 +1223,96 @@ whatsappOrderButton.addEventListener(
 
         const subtotal =
             cart.reduce(
-                function (total, item) {
+                function (
+                    total,
+                    item
+                ) {
 
-                    return total +
-                        item.price *
-                        item.quantity;
+                    return (
+                        total +
+                        (
+                            item.price *
+                            item.quantity
+                        )
+                    );
 
                 },
                 0
             );
 
+
         const delivery =
-            cart.length > 0 ? 20 : 0;
+            cart.length > 0
+                ? 20
+                : 0;
+
 
         const total =
-            subtotal + delivery;
+            subtotal +
+            delivery;
+
 
         let message =
             "🛵 *NUEVO PEDIDO PANCHGO*\n\n";
+
 
         message +=
             "*Negocio:* " +
             cart[0].business +
             "\n\n";
 
+
         message +=
             "*Productos:*\n";
 
-        cart.forEach(function (item) {
 
-            message +=
-                item.quantity +
-                " × " +
-                item.name +
-                " - $" +
-                (
-                    item.price *
-                    item.quantity
-                ).toFixed(2) +
-                "\n";
+        cart.forEach(
+            function (item) {
 
-        });
+                message +=
+                    item.quantity +
+                    " × " +
+                    item.name +
+                    " - $" +
+                    (
+                        item.price *
+                        item.quantity
+                    ).toFixed(2) +
+                    "\n";
+
+            }
+        );
+
 
         message +=
             "\n*Productos:* $" +
             subtotal.toFixed(2);
 
+
         message +=
             "\n*Envío:* $" +
             delivery.toFixed(2);
+
 
         message +=
             "\n*TOTAL:* $" +
             total.toFixed(2);
 
+
         message +=
             "\n\n*Cliente:* " +
             customerName.value;
+
 
         message +=
             "\n*Teléfono:* " +
             customerPhone.value;
 
+
         message +=
             "\n*Dirección:* " +
             customerAddress.value;
+
 
         message +=
             "\n*Forma de pago:* " +
@@ -1095,16 +1322,21 @@ whatsappOrderButton.addEventListener(
         const whatsappNumber =
             "5210000000000";
 
+
         const whatsappURL =
             "https://wa.me/" +
             whatsappNumber +
             "?text=" +
-            encodeURIComponent(message);
+            encodeURIComponent(
+                message
+            );
+
 
         window.open(
             whatsappURL,
             "_blank"
         );
+
     }
 );
 
@@ -1126,7 +1358,7 @@ closeOrderModal.addEventListener(
 
 
 /* =========================================================
-   CONTACTO NEGOCIOS
+   NEGOCIOS
 ========================================================= */
 
 joinBusinessButton.addEventListener(
