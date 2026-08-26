@@ -1,7 +1,7 @@
 /* =========================================================
    PANCHGO
-   SCRIPT COMPLETO + SUPABASE
-   CORRECCIÓN: TABLA "Businesses" USA COLUMNA "ID"
+   SCRIPT COMPLETO
+   SUPABASE REST DIRECTO
 ========================================================= */
 
 
@@ -15,19 +15,15 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
     "sb_publishable_1wRntDky8YlSGLmynI8O5Q_lNSbWMbu";
 
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
-
 
 /* =========================================================
    ESTADO
 ========================================================= */
 
 let cart = [];
+
 let selectedBusiness = null;
+
 let selectedBusinessData = null;
 
 
@@ -118,78 +114,129 @@ const joinBusinessButton =
 
 
 /* =========================================================
+   CONSULTAR BUSINESSES DIRECTAMENTE EN SUPABASE
+========================================================= */
+
+async function getBusinesses() {
+
+    const url =
+        SUPABASE_URL +
+        "/rest/v1/Businesses?select=*";
+
+
+    console.log(
+        "PanchGo → consultando:",
+        url
+    );
+
+
+    const response =
+        await fetch(
+            url,
+            {
+                method: "GET",
+
+                headers: {
+
+                    "apikey":
+                        SUPABASE_KEY,
+
+                    "Authorization":
+                        "Bearer " +
+                        SUPABASE_KEY,
+
+                    "Content-Type":
+                        "application/json"
+
+                }
+            }
+        );
+
+
+    const text =
+        await response.text();
+
+
+    console.log(
+        "PanchGo → respuesta Businesses:",
+        response.status,
+        text
+    );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Supabase respondió " +
+            response.status +
+            ": " +
+            text
+        );
+
+    }
+
+
+    return JSON.parse(
+        text
+    );
+}
+
+
+/* =========================================================
    CARGAR NEGOCIOS
 ========================================================= */
 
 async function loadBusinesses() {
 
     const businessList =
-        document.querySelector(".business-list");
+        document.querySelector(
+            ".business-list"
+        );
+
 
     if (!businessList) {
+
         console.error(
-            "No se encontró .business-list"
+            "No existe .business-list"
         );
+
         return;
     }
 
+
     businessList.innerHTML = `
+
         <div class="empty-message">
+
             <span>⏳</span>
-            <h3>Cargando negocios...</h3>
-            <p>Conectando con PanchGo.</p>
+
+            <h3>
+                Cargando negocios...
+            </h3>
+
+            <p>
+                Conectando con PanchGo.
+            </p>
+
         </div>
+
     `;
+
 
     try {
 
-        console.log(
-            "Conectando con Supabase..."
-        );
-
-        /*
-         * IMPORTANTE:
-         * La tabla Businesses tiene:
-         *
-         * ID          UUID
-         * name        text
-         * description text
-         * active      boolean
-         *
-         * Por eso seleccionamos explícitamente
-         * "ID" y no "id".
-         */
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-                .from("Businesses")
-                .select('"ID",name,description,active')
-                .eq("active", true)
-                .order("name");
-
-
-        if (error) {
-
-            console.error(
-                "ERROR SUPABASE BUSINESSES:",
-                error
-            );
-
-            throw error;
-        }
+        const businesses =
+            await getBusinesses();
 
 
         console.log(
-            "NEGOCIOS RECIBIDOS:",
-            data
+            "PanchGo → negocios:",
+            businesses
         );
 
 
         renderBusinesses(
-            data || []
+            businesses
         );
 
 
@@ -202,20 +249,23 @@ async function loadBusinesses() {
 
 
         businessList.innerHTML = `
+
             <div class="empty-message">
 
                 <span>⚠️</span>
 
                 <h3>
-                    Error al cargar negocios.
+                    Error al cargar negocios
                 </h3>
 
                 <p>
-                    ${error.message || "Error desconocido."}
+                    ${error.message}
                 </p>
 
             </div>
+
         `;
+
     }
 }
 
@@ -234,20 +284,18 @@ function renderBusinesses(
         );
 
 
-    if (!businessList) {
-        return;
-    }
-
-
     businessList.innerHTML = "";
 
 
     if (
-        !businesses ||
+        !Array.isArray(
+            businesses
+        ) ||
         businesses.length === 0
     ) {
 
         businessList.innerHTML = `
+
             <div class="empty-message">
 
                 <span>🏪</span>
@@ -257,11 +305,12 @@ function renderBusinesses(
                 </h3>
 
                 <p>
-                    La conexión con Supabase funciona,
-                    pero la consulta no encontró negocios activos.
+                    Supabase respondió correctamente,
+                    pero no devolvió negocios.
                 </p>
 
             </div>
+
         `;
 
         return;
@@ -269,7 +318,9 @@ function renderBusinesses(
 
 
     businesses.forEach(
-        function (business) {
+        function (
+            business
+        ) {
 
             const button =
                 document.createElement(
@@ -282,11 +333,17 @@ function renderBusinesses(
 
 
             /*
-             * LA COLUMNA REAL ES "ID"
+             * Usamos exactamente el ID que
+             * devuelve Supabase.
              */
 
+            const businessId =
+                business.ID ||
+                business.id;
+
+
             button.dataset.businessId =
-                business.ID;
+                businessId;
 
 
             button.innerHTML = `
@@ -354,7 +411,8 @@ async function openBusiness(
 ) {
 
     selectedBusiness =
-        business.ID;
+        business.ID ||
+        business.id;
 
 
     selectedBusinessData =
@@ -386,7 +444,109 @@ async function openBusiness(
 
 
     await loadProducts(
-        business.ID
+        selectedBusiness
+    );
+}
+
+
+/* =========================================================
+   CONSULTAR PRODUCTS DIRECTAMENTE
+========================================================= */
+
+async function getProducts(
+    businessId
+) {
+
+    /*
+     * Primero consultamos todos los productos.
+     *
+     * Después filtramos en JavaScript para evitar
+     * problemas si la columna de relación tiene
+     * mayúsculas/minúsculas diferentes.
+     */
+
+    const url =
+        SUPABASE_URL +
+        "/rest/v1/Products?select=*";
+
+
+    console.log(
+        "PanchGo → consultando Products:",
+        url
+    );
+
+
+    const response =
+        await fetch(
+            url,
+            {
+                method: "GET",
+
+                headers: {
+
+                    "apikey":
+                        SUPABASE_KEY,
+
+                    "Authorization":
+                        "Bearer " +
+                        SUPABASE_KEY,
+
+                    "Content-Type":
+                        "application/json"
+
+                }
+            }
+        );
+
+
+    const text =
+        await response.text();
+
+
+    console.log(
+        "PanchGo → respuesta Products:",
+        response.status,
+        text
+    );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Supabase Products respondió " +
+            response.status +
+            ": " +
+            text
+        );
+
+    }
+
+
+    const products =
+        JSON.parse(
+            text
+        );
+
+
+    return products.filter(
+        function (
+            product
+        ) {
+
+            const productBusinessId =
+                product.Businesses_id ||
+                product.businesses_id ||
+                product.BusinessID ||
+                product.business_id;
+
+
+            return String(
+                productBusinessId
+            ) === String(
+                businessId
+            );
+
+        }
     );
 }
 
@@ -401,50 +561,27 @@ async function loadProducts(
 
     try {
 
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-                .from("Products")
-                .select("*")
-                .eq(
-                    "Businesses_id",
-                    businessId
-                )
-                .eq(
-                    "Active",
-                    true
-                )
-                .order("name");
-
-
-        if (error) {
-
-            console.error(
-                "ERROR PRODUCTS:",
-                error
+        const products =
+            await getProducts(
+                businessId
             );
-
-            throw error;
-        }
 
 
         console.log(
-            "PRODUCTOS RECIBIDOS:",
-            data
+            "PanchGo → productos del negocio:",
+            products
         );
 
 
         renderProducts(
-            data || []
+            products
         );
 
 
     } catch (error) {
 
         console.error(
-            "No se pudieron cargar los productos:",
+            "ERROR AL CARGAR PRODUCTOS:",
             error
         );
 
@@ -460,12 +597,13 @@ async function loadProducts(
                 </h3>
 
                 <p>
-                    ${error.message || "Error desconocido."}
+                    ${error.message}
                 </p>
 
             </div>
 
         `;
+
     }
 }
 
@@ -509,7 +647,9 @@ function renderProducts(
 
 
     products.forEach(
-        function (product) {
+        function (
+            product
+        ) {
 
             const productCard =
                 document.createElement(
@@ -565,7 +705,6 @@ function renderProducts(
 
                 </div>
 
-
                 <button
                     class="primary-button add-product-button"
                 >
@@ -603,22 +742,6 @@ function renderProducts(
 
 
 /* =========================================================
-   OBTENER ID DEL PRODUCTO
-========================================================= */
-
-function getProductId(
-    product
-) {
-
-    return (
-        product.Id ||
-        product.ID ||
-        product.id
-    );
-}
-
-
-/* =========================================================
    CARRITO
 ========================================================= */
 
@@ -627,9 +750,9 @@ function addToCart(
 ) {
 
     const productId =
-        getProductId(
-            product
-        );
+        product.Id ||
+        product.ID ||
+        product.id;
 
 
     if (!productId) {
@@ -638,27 +761,19 @@ function addToCart(
             "Este producto no tiene un ID válido."
         );
 
-        console.error(
-            "Producto sin ID:",
-            product
-        );
-
-        return;
-    }
-
-
-    if (!selectedBusinessData) {
-
         return;
     }
 
 
     const existingProduct =
         cart.find(
-            function (item) {
+            function (
+                item
+            ) {
 
-                return (
-                    item.id ===
+                return String(
+                    item.id
+                ) === String(
                     productId
                 );
 
@@ -696,7 +811,8 @@ function addToCart(
                 selectedBusinessData.name,
 
             businessId:
-                selectedBusinessData.ID
+                selectedBusinessData.ID ||
+                selectedBusinessData.id
 
         });
 
@@ -768,7 +884,9 @@ function updateCart() {
 
 
         cart.forEach(
-            function (item) {
+            function (
+                item
+            ) {
 
                 const itemElement =
                     document.createElement(
@@ -838,7 +956,9 @@ function updateCart() {
                 ".quantity-button"
             )
             .forEach(
-                function (button) {
+                function (
+                    button
+                ) {
 
                     button.addEventListener(
                         "click",
@@ -912,11 +1032,14 @@ function changeQuantity(
 
     const item =
         cart.find(
-            function (product) {
+            function (
+                product
+            ) {
 
-                return (
-                    String(product.id) ===
-                    String(id)
+                return String(
+                    product.id
+                ) === String(
+                    id
                 );
 
             }
@@ -933,6 +1056,7 @@ function changeQuantity(
     ) {
 
         item.quantity += 1;
+
     }
 
 
@@ -953,14 +1077,17 @@ function changeQuantity(
                         product
                     ) {
 
-                        return (
-                            String(product.id) !==
-                            String(id)
+                        return String(
+                            product.id
+                        ) !== String(
+                            id
                         );
 
                     }
                 );
+
         }
+
     }
 
 
@@ -977,10 +1104,8 @@ function showBusinesses() {
     businessSection.style.display =
         "block";
 
-
     storeSection.style.display =
         "none";
-
 
     businessSection.scrollIntoView({
         behavior: "smooth"
@@ -992,7 +1117,6 @@ function showStores() {
 
     storeSection.style.display =
         "block";
-
 
     storeSection.scrollIntoView({
         behavior: "smooth"
@@ -1117,12 +1241,13 @@ sendOrderButton.addEventListener(
 
 
         createOrderPreview();
+
     }
 );
 
 
 /* =========================================================
-   RESUMEN
+   RESUMEN DEL PEDIDO
 ========================================================= */
 
 function createOrderPreview() {
@@ -1162,22 +1287,21 @@ function createOrderPreview() {
 
 
     cart.forEach(
-        function (item) {
+        function (
+            item
+        ) {
 
             productsHTML += `
 
                 <p>
-
                     ${item.quantity}
                     ×
                     ${item.name}
-
                     —
                     $${(
                         item.price *
                         item.quantity
                     ).toFixed(2)}
-
                 </p>
 
             `;
@@ -1321,7 +1445,9 @@ whatsappOrderButton.addEventListener(
 
 
         cart.forEach(
-            function (item) {
+            function (
+                item
+            ) {
 
                 message +=
                     item.quantity +
@@ -1372,11 +1498,6 @@ whatsappOrderButton.addEventListener(
             "\n*Forma de pago:* " +
             paymentMethod.value;
 
-
-        /*
-         * CAMBIAR POR EL WHATSAPP REAL DE PANCHGO
-         * CUANDO LO TENGAMOS.
-         */
 
         const whatsappNumber =
             "5210000000000";
