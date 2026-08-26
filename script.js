@@ -1,6 +1,6 @@
 /* =========================================================
    PANCHGO
-   SCRIPT COMPLETO + SUPABASE REST API
+   SCRIPT COMPLETO + SUPABASE
 ========================================================= */
 
 
@@ -14,109 +14,11 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
     "sb_publishable_1wRntDky8YlSGLmynI8O5Q_lNSbWMbu";
 
-
-/* =========================================================
-   FUNCIÓN GENERAL PARA SUPABASE
-========================================================= */
-
-async function supabaseRequest(
-    table,
-    options = {}
-) {
-
-    const {
-        select = "*",
-        filters = "",
-        order = ""
-    } = options;
-
-
-    let url =
-        SUPABASE_URL +
-        "/rest/v1/" +
-        table +
-        "?select=" +
-        encodeURIComponent(select);
-
-
-    if (filters) {
-
-        url +=
-            "&" +
-            filters;
-    }
-
-
-    if (order) {
-
-        url +=
-            "&order=" +
-            encodeURIComponent(order);
-    }
-
-
-    const response =
-        await fetch(
-            url,
-            {
-                method: "GET",
-
-                headers: {
-
-                    "apikey":
-                        SUPABASE_KEY,
-
-                    "Authorization":
-                        "Bearer " +
-                        SUPABASE_KEY,
-
-                    "Content-Type":
-                        "application/json",
-
-                    "Accept":
-                        "application/json"
-                }
-            }
-        );
-
-
-    const text =
-        await response.text();
-
-
-    let data;
-
-
-    try {
-
-        data =
-            text
-                ? JSON.parse(text)
-                : null;
-
-    } catch {
-
-        data = text;
-    }
-
-
-    if (!response.ok) {
-
-        throw new Error(
-            "Supabase HTTP " +
-            response.status +
-            ": " +
-            (
-                typeof data === "string"
-                    ? data
-                    : JSON.stringify(data)
-            )
-        );
-    }
-
-
-    return data;
-}
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
 
 /* =========================================================
@@ -124,9 +26,7 @@ async function supabaseRequest(
 ========================================================= */
 
 let cart = [];
-
 let selectedBusiness = null;
-
 let selectedBusinessData = null;
 
 
@@ -135,58 +35,34 @@ let selectedBusinessData = null;
 ========================================================= */
 
 const cartButton =
-    document.getElementById(
-        "cartButton"
-    );
+    document.getElementById("cartButton");
 
 const cartCount =
-    document.getElementById(
-        "cartCount"
-    );
-
+    document.getElementById("cartCount");
 
 const foodButton =
-    document.getElementById(
-        "foodButton"
-    );
+    document.getElementById("foodButton");
 
 const storesButton =
-    document.getElementById(
-        "storesButton"
-    );
-
+    document.getElementById("storesButton");
 
 const heroFoodButton =
-    document.getElementById(
-        "heroFoodButton"
-    );
+    document.getElementById("heroFoodButton");
 
 const heroStoreButton =
-    document.getElementById(
-        "heroStoreButton"
-    );
-
+    document.getElementById("heroStoreButton");
 
 const businessSection =
-    document.getElementById(
-        "businessSection"
-    );
+    document.getElementById("businessSection");
 
 const storeSection =
-    document.getElementById(
-        "storeSection"
-    );
-
+    document.getElementById("storeSection");
 
 const productsSection =
-    document.getElementById(
-        "productsSection"
-    );
+    document.getElementById("productsSection");
 
 const productsBusinessName =
-    document.getElementById(
-        "productsBusinessName"
-    );
+    document.getElementById("productsBusinessName");
 
 const productsBusinessDescription =
     document.getElementById(
@@ -194,172 +70,135 @@ const productsBusinessDescription =
     );
 
 const productGrid =
-    document.getElementById(
-        "productGrid"
-    );
-
+    document.getElementById("productGrid");
 
 const cartSection =
-    document.getElementById(
-        "cartSection"
-    );
+    document.getElementById("cartSection");
 
 const cartItems =
-    document.getElementById(
-        "cartItems"
-    );
-
+    document.getElementById("cartItems");
 
 const cartSubtotal =
-    document.getElementById(
-        "cartSubtotal"
-    );
+    document.getElementById("cartSubtotal");
 
 const deliveryCost =
-    document.getElementById(
-        "deliveryCost"
-    );
+    document.getElementById("deliveryCost");
 
 const cartTotal =
-    document.getElementById(
-        "cartTotal"
-    );
-
+    document.getElementById("cartTotal");
 
 const customerName =
-    document.getElementById(
-        "customerName"
-    );
+    document.getElementById("customerName");
 
 const customerPhone =
-    document.getElementById(
-        "customerPhone"
-    );
+    document.getElementById("customerPhone");
 
 const customerAddress =
-    document.getElementById(
-        "customerAddress"
-    );
+    document.getElementById("customerAddress");
 
 const paymentMethod =
-    document.getElementById(
-        "paymentMethod"
-    );
-
+    document.getElementById("paymentMethod");
 
 const sendOrderButton =
-    document.getElementById(
-        "sendOrderButton"
-    );
-
+    document.getElementById("sendOrderButton");
 
 const orderModal =
-    document.getElementById(
-        "orderModal"
-    );
+    document.getElementById("orderModal");
 
 const orderPreview =
-    document.getElementById(
-        "orderPreview"
-    );
+    document.getElementById("orderPreview");
 
 const closeOrderModal =
-    document.getElementById(
-        "closeOrderModal"
-    );
+    document.getElementById("closeOrderModal");
 
 const whatsappOrderButton =
-    document.getElementById(
-        "whatsappOrderButton"
-    );
-
+    document.getElementById("whatsappOrderButton");
 
 const joinBusinessButton =
-    document.getElementById(
-        "joinBusinessButton"
-    );
+    document.getElementById("joinBusinessButton");
 
 
 /* =========================================================
-   CARGAR NEGOCIOS
+   CARGAR NEGOCIOS DESDE SUPABASE
 ========================================================= */
 
 async function loadBusinesses() {
 
     const businessList =
-        document.querySelector(
-            ".business-list"
-        );
-
+        document.querySelector(".business-list");
 
     if (!businessList) {
-
         return;
     }
 
-
     businessList.innerHTML = `
-
         <div class="empty-message">
-
             <span>⏳</span>
-
-            <h3>
-                Cargando negocios...
-            </h3>
-
+            <h3>Cargando negocios...</h3>
+            <p>Conectando con PanchGo.</p>
         </div>
-
     `;
-
 
     try {
 
-        const businesses =
-            await supabaseRequest(
-                "Businesses",
-                {
-                    select: "*",
-                    order: "name.asc"
-                }
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("Businesses")
+            .select("*")
+            .order("name");
+
+        if (error) {
+
+            console.error(
+                "ERROR SUPABASE BUSINESSES:",
+                error
             );
 
+            businessList.innerHTML = `
+                <div class="empty-message">
+                    <span>⚠️</span>
 
-        console.log(
-            "BUSINESSES:",
-            businesses
-        );
+                    <h3>
+                        No pudimos cargar los negocios.
+                    </h3>
 
+                    <p>
+                        ${error.message || "Error desconocido."}
+                    </p>
+                </div>
+            `;
 
-        renderBusinesses(
-            businesses || []
-        );
+            return;
+        }
 
+        renderBusinesses(data || []);
 
     } catch (error) {
 
         console.error(
-            "ERROR CARGANDO BUSINESSES:",
+            "ERROR DE CONEXIÓN SUPABASE:",
             error
         );
 
-
         businessList.innerHTML = `
-
             <div class="empty-message">
 
                 <span>⚠️</span>
 
                 <h3>
-                    No pudimos cargar los negocios.
+                    Error de conexión.
                 </h3>
 
                 <p>
-                    ${error.message}
+                    ${
+                        error.message ||
+                        "No se pudo conectar con Supabase."
+                    }
                 </p>
 
             </div>
-
         `;
     }
 }
@@ -369,24 +208,16 @@ async function loadBusinesses() {
    MOSTRAR NEGOCIOS
 ========================================================= */
 
-function renderBusinesses(
-    businesses
-) {
+function renderBusinesses(businesses) {
 
     const businessList =
-        document.querySelector(
-            ".business-list"
-        );
-
+        document.querySelector(".business-list");
 
     if (!businessList) {
-
         return;
     }
 
-
     businessList.innerHTML = "";
-
 
     if (
         !businesses ||
@@ -394,7 +225,6 @@ function renderBusinesses(
     ) {
 
         businessList.innerHTML = `
-
             <div class="empty-message">
 
                 <span>🏪</span>
@@ -404,33 +234,26 @@ function renderBusinesses(
                 </h3>
 
                 <p>
-                    Todavía no hay negocios registrados.
+                    Próximamente habrá negocios disponibles.
                 </p>
 
             </div>
-
         `;
 
         return;
     }
 
-
     businesses.forEach(
         function (business) {
 
             const button =
-                document.createElement(
-                    "button"
-                );
-
+                document.createElement("button");
 
             button.className =
                 "business-card";
 
-
             button.dataset.businessId =
                 business.id;
-
 
             button.innerHTML = `
 
@@ -466,7 +289,6 @@ function renderBusinesses(
 
             `;
 
-
             button.addEventListener(
                 "click",
                 function () {
@@ -477,7 +299,6 @@ function renderBusinesses(
 
                 }
             );
-
 
             businessList.appendChild(
                 button
@@ -492,47 +313,29 @@ function renderBusinesses(
    ABRIR NEGOCIO
 ========================================================= */
 
-async function openBusiness(
-    business
-) {
+async function openBusiness(business) {
 
     selectedBusiness =
         business.id;
 
-
     selectedBusinessData =
         business;
-
 
     productsBusinessName.textContent =
         business.name ||
         "Negocio";
 
-
     productsBusinessDescription.textContent =
         business.description ||
         "Productos disponibles";
 
-
     productGrid.innerHTML = `
-
-        <div class="empty-message">
-
-            <span>⏳</span>
-
-            <h3>
-                Cargando productos...
-            </h3>
-
-        </div>
-
+        <p>Cargando productos...</p>
     `;
-
 
     productsSection.scrollIntoView({
         behavior: "smooth"
     });
-
 
     await loadProducts(
         business.id
@@ -544,54 +347,48 @@ async function openBusiness(
    CARGAR PRODUCTOS
 ========================================================= */
 
-async function loadProducts(
-    businessId
-) {
+async function loadProducts(businessId) {
 
     try {
 
-        const filters =
-            "Businesses_id=eq." +
-            encodeURIComponent(
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("Products")
+            .select("*")
+            .eq(
+                "Businesses_id",
                 businessId
-            ) +
-            "&Active=eq.true";
+            )
+            .eq(
+                "Active",
+                true
+            )
+            .order("name");
 
+        if (error) {
 
-        const products =
-            await supabaseRequest(
-                "Products",
-                {
-                    select: "*",
-                    filters:
-                        filters,
-                    order:
-                        "name.asc"
-                }
+            console.error(
+                "ERROR SUPABASE PRODUCTS:",
+                error
             );
 
-
-        console.log(
-            "PRODUCTS:",
-            products
-        );
-
+            throw error;
+        }
 
         renderProducts(
-            products || []
+            data || []
         );
-
 
     } catch (error) {
 
         console.error(
-            "ERROR CARGANDO PRODUCTS:",
+            "ERROR PRODUCTS:",
             error
         );
 
-
         productGrid.innerHTML = `
-
             <div class="empty-message">
 
                 <span>⚠️</span>
@@ -601,11 +398,13 @@ async function loadProducts(
                 </h3>
 
                 <p>
-                    ${error.message}
+                    ${
+                        error.message ||
+                        "Error desconocido."
+                    }
                 </p>
 
             </div>
-
         `;
     }
 }
@@ -615,12 +414,9 @@ async function loadProducts(
    MOSTRAR PRODUCTOS
 ========================================================= */
 
-function renderProducts(
-    products
-) {
+function renderProducts(products) {
 
     productGrid.innerHTML = "";
-
 
     if (
         !products ||
@@ -628,7 +424,6 @@ function renderProducts(
     ) {
 
         productGrid.innerHTML = `
-
             <div class="empty-message">
 
                 <span>🍽️</span>
@@ -638,45 +433,36 @@ function renderProducts(
                 </h3>
 
                 <p>
-                    Agrega productos desde Supabase.
+                    Próximamente habrá productos disponibles.
                 </p>
 
             </div>
-
         `;
 
         return;
     }
 
-
     products.forEach(
         function (product) {
 
             const productCard =
-                document.createElement(
-                    "div"
-                );
-
+                document.createElement("div");
 
             productCard.className =
                 "product-card";
-
 
             const productName =
                 product.name ||
                 "Producto";
 
-
             const productDescription =
                 product.Description ||
                 "";
-
 
             const productPrice =
                 Number(
                     product.Price || 0
                 );
-
 
             productCard.innerHTML = `
 
@@ -696,7 +482,6 @@ function renderProducts(
 
                 </div>
 
-
                 <button
                     class="primary-button add-product-button"
                 >
@@ -705,12 +490,10 @@ function renderProducts(
 
             `;
 
-
             const addButton =
                 productCard.querySelector(
                     ".add-product-button"
                 );
-
 
             addButton.addEventListener(
                 "click",
@@ -722,7 +505,6 @@ function renderProducts(
 
                 }
             );
-
 
             productGrid.appendChild(
                 productCard
@@ -737,17 +519,7 @@ function renderProducts(
    CARRITO
 ========================================================= */
 
-function addToCart(
-    product
-) {
-
-    if (
-        !selectedBusinessData
-    ) {
-
-        return;
-    }
-
+function addToCart(product) {
 
     const existingProduct =
         cart.find(
@@ -760,7 +532,6 @@ function addToCart(
 
             }
         );
-
 
     if (existingProduct) {
 
@@ -794,9 +565,7 @@ function addToCart(
 
     }
 
-
     updateCart();
-
 
     cartSection.scrollIntoView({
         behavior: "smooth"
@@ -826,10 +595,8 @@ function updateCart() {
             0
         );
 
-
     cartCount.textContent =
         count;
-
 
     if (
         cart.length === 0
@@ -858,7 +625,6 @@ function updateCart() {
 
         cartItems.innerHTML = "";
 
-
         cart.forEach(
             function (item) {
 
@@ -867,10 +633,8 @@ function updateCart() {
                         "div"
                     );
 
-
                 itemElement.className =
                     "cart-item";
-
 
                 itemElement.innerHTML = `
 
@@ -886,7 +650,6 @@ function updateCart() {
                         </p>
 
                     </div>
-
 
                     <div
                         class="cart-item-controls"
@@ -916,14 +679,12 @@ function updateCart() {
 
                 `;
 
-
                 cartItems.appendChild(
                     itemElement
                 );
 
             }
         );
-
 
         document
             .querySelectorAll(
@@ -948,7 +709,6 @@ function updateCart() {
             );
     }
 
-
     const subtotal =
         cart.reduce(
             function (
@@ -968,25 +728,20 @@ function updateCart() {
             0
         );
 
-
     const delivery =
         cart.length > 0
             ? 20
             : 0;
 
-
     const total =
         subtotal +
         delivery;
 
-
     cartSubtotal.textContent =
         `$${subtotal.toFixed(2)}`;
 
-
     deliveryCost.textContent =
         `$${delivery.toFixed(2)}`;
-
 
     cartTotal.textContent =
         `$${total.toFixed(2)}`;
@@ -997,10 +752,7 @@ function updateCart() {
    CAMBIAR CANTIDAD
 ========================================================= */
 
-function changeQuantity(
-    id,
-    action
-) {
+function changeQuantity(id, action) {
 
     const item =
         cart.find(
@@ -1013,12 +765,9 @@ function changeQuantity(
             }
         );
 
-
     if (!item) {
-
         return;
     }
-
 
     if (
         action === "plus"
@@ -1027,13 +776,11 @@ function changeQuantity(
         item.quantity += 1;
     }
 
-
     if (
         action === "minus"
     ) {
 
         item.quantity -= 1;
-
 
         if (
             item.quantity <= 0
@@ -1054,7 +801,6 @@ function changeQuantity(
         }
     }
 
-
     updateCart();
 }
 
@@ -1068,46 +814,38 @@ function showBusinesses() {
     businessSection.style.display =
         "block";
 
-
     storeSection.style.display =
         "none";
-
 
     businessSection.scrollIntoView({
         behavior: "smooth"
     });
 }
 
-
 function showStores() {
 
     storeSection.style.display =
         "block";
-
 
     storeSection.scrollIntoView({
         behavior: "smooth"
     });
 }
 
-
 foodButton.addEventListener(
     "click",
     showBusinesses
 );
-
 
 heroFoodButton.addEventListener(
     "click",
     showBusinesses
 );
 
-
 storesButton.addEventListener(
     "click",
     showStores
 );
-
 
 heroStoreButton.addEventListener(
     "click",
@@ -1150,7 +888,6 @@ sendOrderButton.addEventListener(
             return;
         }
 
-
         if (
             !customerName.value.trim()
         ) {
@@ -1163,7 +900,6 @@ sendOrderButton.addEventListener(
 
             return;
         }
-
 
         if (
             !customerPhone.value.trim()
@@ -1178,7 +914,6 @@ sendOrderButton.addEventListener(
             return;
         }
 
-
         if (
             !customerAddress.value.trim()
         ) {
@@ -1191,7 +926,6 @@ sendOrderButton.addEventListener(
 
             return;
         }
-
 
         if (
             !paymentMethod.value
@@ -1206,8 +940,8 @@ sendOrderButton.addEventListener(
             return;
         }
 
-
         createOrderPreview();
+
     }
 );
 
@@ -1237,45 +971,35 @@ function createOrderPreview() {
             0
         );
 
-
     const delivery =
         cart.length > 0
             ? 20
             : 0;
 
-
     const total =
         subtotal +
         delivery;
 
-
     let productsHTML = "";
-
 
     cart.forEach(
         function (item) {
 
             productsHTML += `
-
                 <p>
-
                     ${item.quantity}
                     ×
                     ${item.name}
-
                     —
                     $${(
                         item.price *
                         item.quantity
                     ).toFixed(2)}
-
                 </p>
-
             `;
 
         }
     );
-
 
     orderPreview.innerHTML = `
 
@@ -1290,67 +1014,45 @@ function createOrderPreview() {
             <hr>
 
             <p>
-                <strong>
-                    Productos:
-                </strong>
-
+                <strong>Productos:</strong>
                 $${subtotal.toFixed(2)}
             </p>
 
             <p>
-                <strong>
-                    Envío:
-                </strong>
-
+                <strong>Envío:</strong>
                 $${delivery.toFixed(2)}
             </p>
 
             <p>
-                <strong>
-                    Total:
-                </strong>
-
+                <strong>Total:</strong>
                 $${total.toFixed(2)}
             </p>
 
             <hr>
 
             <p>
-                <strong>
-                    Cliente:
-                </strong>
-
+                <strong>Cliente:</strong>
                 ${customerName.value}
             </p>
 
             <p>
-                <strong>
-                    Teléfono:
-                </strong>
-
+                <strong>Teléfono:</strong>
                 ${customerPhone.value}
             </p>
 
             <p>
-                <strong>
-                    Dirección:
-                </strong>
-
+                <strong>Dirección:</strong>
                 ${customerAddress.value}
             </p>
 
             <p>
-                <strong>
-                    Pago:
-                </strong>
-
+                <strong>Pago:</strong>
                 ${paymentMethod.value}
             </p>
 
         </div>
 
     `;
-
 
     orderModal.classList.add(
         "active"
@@ -1385,31 +1087,25 @@ whatsappOrderButton.addEventListener(
                 0
             );
 
-
         const delivery =
             cart.length > 0
                 ? 20
                 : 0;
 
-
         const total =
             subtotal +
             delivery;
 
-
         let message =
             "🛵 *NUEVO PEDIDO PANCHGO*\n\n";
-
 
         message +=
             "*Negocio:* " +
             cart[0].business +
             "\n\n";
 
-
         message +=
             "*Productos:*\n";
-
 
         cart.forEach(
             function (item) {
@@ -1428,45 +1124,36 @@ whatsappOrderButton.addEventListener(
             }
         );
 
-
         message +=
             "\n*Productos:* $" +
             subtotal.toFixed(2);
-
 
         message +=
             "\n*Envío:* $" +
             delivery.toFixed(2);
 
-
         message +=
             "\n*TOTAL:* $" +
             total.toFixed(2);
-
 
         message +=
             "\n\n*Cliente:* " +
             customerName.value;
 
-
         message +=
             "\n*Teléfono:* " +
             customerPhone.value;
-
 
         message +=
             "\n*Dirección:* " +
             customerAddress.value;
 
-
         message +=
             "\n*Forma de pago:* " +
             paymentMethod.value;
 
-
         const whatsappNumber =
             "5210000000000";
-
 
         const whatsappURL =
             "https://wa.me/" +
@@ -1475,7 +1162,6 @@ whatsappOrderButton.addEventListener(
             encodeURIComponent(
                 message
             );
-
 
         window.open(
             whatsappURL,
