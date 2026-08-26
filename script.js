@@ -1,6 +1,7 @@
 /* =========================================================
    PANCHGO
-   SCRIPT COMPLETO — DIAGNÓSTICO SUPABASE
+   SCRIPT COMPLETO
+   SUPABASE — BUSINESSES + PRODUCTS
 ========================================================= */
 
 
@@ -145,7 +146,7 @@ const joinBusinessButton =
 
 
 /* =========================================================
-   FUNCIÓN DE DIAGNÓSTICO VISIBLE
+   MENSAJE DE NEGOCIOS
 ========================================================= */
 
 function showBusinessMessage(
@@ -183,7 +184,42 @@ function showBusinessMessage(
         </div>
 
     `;
+}
 
+
+/* =========================================================
+   MENSAJE DE PRODUCTOS
+========================================================= */
+
+function showProductMessage(
+    title,
+    message,
+    icon = "ℹ️"
+) {
+
+    if (!productGrid) {
+
+        return;
+    }
+
+
+    productGrid.innerHTML = `
+
+        <div class="empty-message">
+
+            <span>${icon}</span>
+
+            <h3>
+                ${title}
+            </h3>
+
+            <p>
+                ${message}
+            </p>
+
+        </div>
+
+    `;
 }
 
 
@@ -194,7 +230,7 @@ function showBusinessMessage(
 async function loadBusinesses() {
 
     console.log(
-        "PanchGo: iniciando consulta REST..."
+        "PanchGo: iniciando consulta de negocios..."
     );
 
 
@@ -225,13 +261,13 @@ async function loadBusinesses() {
         const url =
             SUPABASE_URL +
             "/rest/v1/Businesses" +
-            "?select=name,%22Descripci%C3%B3n%22,%22Active%22" +
+            "?select=id,name,%22Descripci%C3%B3n%22,%22Active%22" +
             "&%22Active%22=eq.true" +
             "&order=name";
 
 
         console.log(
-            "PanchGo URL:",
+            "PanchGo URL negocios:",
             url
         );
 
@@ -268,7 +304,7 @@ async function loadBusinesses() {
 
 
         console.log(
-            "PanchGo HTTP:",
+            "PanchGo HTTP negocios:",
             response.status
         );
 
@@ -278,7 +314,7 @@ async function loadBusinesses() {
 
 
         console.log(
-            "PanchGo respuesta:",
+            "PanchGo respuesta negocios:",
             responseText
         );
 
@@ -314,12 +350,6 @@ async function loadBusinesses() {
         }
 
 
-        console.log(
-            "PanchGo negocios recibidos:",
-            data
-        );
-
-
         if (
             !Array.isArray(data)
         ) {
@@ -345,6 +375,12 @@ async function loadBusinesses() {
         }
 
 
+        console.log(
+            "PanchGo negocios recibidos:",
+            data
+        );
+
+
         renderBusinesses(
             data
         );
@@ -358,7 +394,7 @@ async function loadBusinesses() {
 
 
         console.error(
-            "PanchGo ERROR:",
+            "PanchGo ERROR BUSINESSES:",
             error
         );
 
@@ -370,7 +406,7 @@ async function loadBusinesses() {
 
             showBusinessMessage(
                 "Supabase no respondió.",
-                "La conexión tardó más de 8 segundos. El navegador canceló la solicitud.",
+                "La conexión tardó más de 8 segundos.",
                 "⏱️"
             );
 
@@ -495,7 +531,7 @@ async function openBusiness(
 ) {
 
     selectedBusiness =
-        business.name;
+        business.id;
 
 
     selectedBusinessData =
@@ -512,23 +548,11 @@ async function openBusiness(
         "Productos disponibles";
 
 
-    productGrid.innerHTML = `
-
-        <div class="empty-message">
-
-            <span>⏳</span>
-
-            <h3>
-                Cargando productos...
-            </h3>
-
-            <p>
-                Buscando productos.
-            </p>
-
-        </div>
-
-    `;
+    showProductMessage(
+        "Cargando productos...",
+        "Buscando el catálogo de este negocio.",
+        "⏳"
+    );
 
 
     productsSection.scrollIntoView({
@@ -537,39 +561,309 @@ async function openBusiness(
 
 
     await loadProducts(
-        business
+        business.id
     );
 
 }
 
 
 /* =========================================================
-   PRODUCTOS
+   CARGAR PRODUCTOS
 ========================================================= */
 
 async function loadProducts(
-    business
+    businessId
 ) {
 
-    productGrid.innerHTML = `
+    console.log(
+        "PanchGo: cargando productos del negocio:",
+        businessId
+    );
 
-        <div class="empty-message">
 
-            <span>🍽️</span>
+    const controller =
+        new AbortController();
 
-            <h3>
-                Productos próximamente.
-            </h3>
 
-            <p>
-                La conexión de negocios ya está
-                funcionando. La conexión de productos
-                se configurará después.
-            </p>
+    const timeout =
+        setTimeout(
+            function () {
 
-        </div>
+                controller.abort();
 
-    `;
+            },
+            8000
+        );
+
+
+    try {
+
+        const url =
+            SUPABASE_URL +
+            "/rest/v1/Products" +
+            "?select=%22Id%22,name,%22Description%22,%22Price%22,%22Active%22" +
+            "&Businesses_id=eq." +
+            encodeURIComponent(
+                businessId
+            ) +
+            "&%22Active%22=eq.true" +
+            "&order=name";
+
+
+        console.log(
+            "PanchGo URL productos:",
+            url
+        );
+
+
+        const response =
+            await fetch(
+                url,
+                {
+                    method: "GET",
+
+                    signal:
+                        controller.signal,
+
+                    headers: {
+
+                        "apikey":
+                            SUPABASE_KEY,
+
+                        "Authorization":
+                            "Bearer " +
+                            SUPABASE_KEY,
+
+                        "Accept":
+                            "application/json"
+
+                    }
+                }
+            );
+
+
+        clearTimeout(
+            timeout
+        );
+
+
+        console.log(
+            "PanchGo HTTP productos:",
+            response.status
+        );
+
+
+        const responseText =
+            await response.text();
+
+
+        console.log(
+            "PanchGo respuesta productos:",
+            responseText
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Supabase respondió HTTP " +
+                response.status +
+                ": " +
+                responseText
+            );
+
+        }
+
+
+        let data;
+
+
+        try {
+
+            data =
+                JSON.parse(
+                    responseText
+                );
+
+        } catch (error) {
+
+            throw new Error(
+                "La respuesta de productos no es JSON."
+            );
+
+        }
+
+
+        if (
+            !Array.isArray(data)
+        ) {
+
+            throw new Error(
+                "Supabase no devolvió una lista de productos."
+            );
+
+        }
+
+
+        if (
+            data.length === 0
+        ) {
+
+            showProductMessage(
+                "Sin productos todavía.",
+                "Este negocio todavía no tiene productos disponibles.",
+                "🍽️"
+            );
+
+            return;
+        }
+
+
+        console.log(
+            "PanchGo productos recibidos:",
+            data
+        );
+
+
+        renderProducts(
+            data
+        );
+
+
+    } catch (error) {
+
+        clearTimeout(
+            timeout
+        );
+
+
+        console.error(
+            "PanchGo ERROR PRODUCTS:",
+            error
+        );
+
+
+        if (
+            error.name ===
+            "AbortError"
+        ) {
+
+            showProductMessage(
+                "Supabase no respondió.",
+                "La consulta de productos tardó más de 8 segundos.",
+                "⏱️"
+            );
+
+            return;
+        }
+
+
+        showProductMessage(
+            "Error al cargar productos.",
+            error.message,
+            "⚠️"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   MOSTRAR PRODUCTOS
+========================================================= */
+
+function renderProducts(
+    products
+) {
+
+    productGrid.innerHTML = "";
+
+
+    products.forEach(
+        function (product) {
+
+            const productCard =
+                document.createElement(
+                    "div"
+                );
+
+
+            productCard.className =
+                "product-card";
+
+
+            const productId =
+                product.Id;
+
+
+            const productName =
+                product.name ||
+                "Producto";
+
+
+            const productDescription =
+                product.Description ||
+                "";
+
+
+            const productPrice =
+                Number(
+                    product.Price || 0
+                );
+
+
+            productCard.innerHTML = `
+
+                <div class="product-info">
+
+                    <h3>
+                        ${productName}
+                    </h3>
+
+                    <p>
+                        ${productDescription}
+                    </p>
+
+                    <strong>
+                        $${productPrice.toFixed(2)}
+                    </strong>
+
+                </div>
+
+                <button
+                    class="primary-button add-product-button"
+                >
+                    Agregar
+                </button>
+
+            `;
+
+
+            const addButton =
+                productCard.querySelector(
+                    ".add-product-button"
+                );
+
+
+            addButton.addEventListener(
+                "click",
+                function () {
+
+                    addToCart(
+                        product
+                    );
+
+                }
+            );
+
+
+            productGrid.appendChild(
+                productCard
+            );
+
+        }
+    );
 
 }
 
@@ -579,9 +873,7 @@ async function loadProducts(
 ========================================================= */
 
 function addToCart(
-    productId,
-    productName,
-    productPrice
+    product
 ) {
 
     const existingProduct =
@@ -590,7 +882,7 @@ function addToCart(
 
                 return (
                     String(item.id) ===
-                    String(productId)
+                    String(product.Id)
                 );
 
             }
@@ -606,13 +898,15 @@ function addToCart(
         cart.push({
 
             id:
-                productId,
+                product.Id,
 
             name:
-                productName,
+                product.name,
 
             price:
-                Number(productPrice),
+                Number(
+                    product.Price || 0
+                ),
 
             quantity:
                 1,
@@ -620,7 +914,12 @@ function addToCart(
             business:
                 selectedBusinessData
                     ? selectedBusinessData.name
-                    : "Negocio"
+                    : "Negocio",
+
+            businessId:
+                selectedBusinessData
+                    ? selectedBusinessData.id
+                    : null
 
         });
 
@@ -815,8 +1114,10 @@ function updateCart() {
     cartSubtotal.textContent =
         `$${subtotal.toFixed(2)}`;
 
+
     deliveryCost.textContent =
         `$${delivery.toFixed(2)}`;
+
 
     cartTotal.textContent =
         `$${total.toFixed(2)}`;
@@ -903,8 +1204,10 @@ function showBusinesses() {
     businessSection.style.display =
         "block";
 
+
     storeSection.style.display =
         "none";
+
 
     businessSection.scrollIntoView({
         behavior: "smooth"
@@ -917,6 +1220,7 @@ function showStores() {
 
     storeSection.style.display =
         "block";
+
 
     storeSection.scrollIntoView({
         behavior: "smooth"
@@ -966,7 +1270,7 @@ if (heroStoreButton) {
 
 
 /* =========================================================
-   CARRITO
+   BOTÓN CARRITO
 ========================================================= */
 
 if (cartButton) {
@@ -1072,7 +1376,7 @@ if (sendOrderButton) {
 
 
 /* =========================================================
-   RESUMEN
+   RESUMEN DEL PEDIDO
 ========================================================= */
 
 function createOrderPreview() {
@@ -1117,14 +1421,17 @@ function createOrderPreview() {
             productsHTML += `
 
                 <p>
+
                     ${item.quantity}
                     ×
                     ${item.name}
+
                     —
                     $${(
                         item.price *
                         item.quantity
                     ).toFixed(2)}
+
                 </p>
 
             `;
@@ -1149,6 +1456,7 @@ function createOrderPreview() {
                 <strong>
                     Productos:
                 </strong>
+
                 $${subtotal.toFixed(2)}
             </p>
 
@@ -1156,6 +1464,7 @@ function createOrderPreview() {
                 <strong>
                     Envío:
                 </strong>
+
                 $${delivery.toFixed(2)}
             </p>
 
@@ -1163,6 +1472,7 @@ function createOrderPreview() {
                 <strong>
                     Total:
                 </strong>
+
                 $${total.toFixed(2)}
             </p>
 
@@ -1172,6 +1482,7 @@ function createOrderPreview() {
                 <strong>
                     Cliente:
                 </strong>
+
                 ${customerName.value}
             </p>
 
@@ -1179,6 +1490,7 @@ function createOrderPreview() {
                 <strong>
                     Teléfono:
                 </strong>
+
                 ${customerPhone.value}
             </p>
 
@@ -1186,6 +1498,7 @@ function createOrderPreview() {
                 <strong>
                     Dirección:
                 </strong>
+
                 ${customerAddress.value}
             </p>
 
@@ -1193,6 +1506,7 @@ function createOrderPreview() {
                 <strong>
                     Pago:
                 </strong>
+
                 ${paymentMethod.value}
             </p>
 
@@ -1291,25 +1605,31 @@ if (whatsappOrderButton) {
                 "\n*Productos:* $" +
                 subtotal.toFixed(2);
 
+
             message +=
                 "\n*Envío:* $" +
                 delivery.toFixed(2);
+
 
             message +=
                 "\n*TOTAL:* $" +
                 total.toFixed(2);
 
+
             message +=
                 "\n\n*Cliente:* " +
                 customerName.value;
+
 
             message +=
                 "\n*Teléfono:* " +
                 customerPhone.value;
 
+
             message +=
                 "\n*Dirección:* " +
                 customerAddress.value;
+
 
             message +=
                 "\n*Forma de pago:* " +
@@ -1361,7 +1681,7 @@ if (closeOrderModal) {
 
 
 /* =========================================================
-   NEGOCIOS
+   REGISTRAR NEGOCIO
 ========================================================= */
 
 if (joinBusinessButton) {
