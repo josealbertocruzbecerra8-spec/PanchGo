@@ -2,9 +2,9 @@
    PANCHGO — CONEXIÓN SUPABASE
 ========================================================= */
 
-const SUPABASE_URL = "PEGA_AQUI_TU_URL_DE_SUPABASE";
+const SUPABASE_URL = "https://vciekecvbqvlbavxhmfz.supabase.co/rest/v1/";
 
-const SUPABASE_KEY = "PEGA_AQUI_TU_CB_PUBLISHABLE";
+const SUPABASE_KEY = "sb_publishable_1wRntDky8YlSGLmynI8O5Q_lNSbWMbu";
 
 
 const supabaseClient =
