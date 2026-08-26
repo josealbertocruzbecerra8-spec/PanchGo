@@ -1,6 +1,6 @@
 /* =========================================================
    PANCHGO
-   SCRIPT COMPLETO + SUPABASE + DIAGNÓSTICO
+   SCRIPT COMPLETO + SUPABASE
 ========================================================= */
 
 
@@ -14,17 +14,14 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
     "sb_publishable_1wRntDky8YlSGLmynI8O5Q_lNSbWMbu";
 
-
-let supabaseClient;
+let supabaseClient = null;
 
 try {
 
     if (!window.supabase) {
-
         throw new Error(
-            "La librería de Supabase no está cargada en index.html."
+            "La librería de Supabase no está cargada."
         );
-
     }
 
     supabaseClient =
@@ -34,7 +31,7 @@ try {
         );
 
     console.log(
-        "PanchGo: cliente Supabase creado correctamente."
+        "PanchGo: Supabase iniciado correctamente."
     );
 
 } catch (error) {
@@ -177,10 +174,10 @@ const joinBusinessButton =
 
 
 /* =========================================================
-   MENSAJE DE DIAGNÓSTICO
+   ERROR VISIBLE
 ========================================================= */
 
-function showConnectionError(message) {
+function showBusinessError(message) {
 
     const businessList =
         document.querySelector(
@@ -198,21 +195,11 @@ function showConnectionError(message) {
             <span>⚠️</span>
 
             <h3>
-                Error de conexión
+                Error al cargar negocios
             </h3>
 
             <p>
                 ${message}
-            </p>
-
-            <p style="
-                margin-top:15px;
-                font-size:0.8rem;
-                color:#999;
-                word-break:break-word;
-            ">
-                Revisa la consola del navegador para
-                obtener más información.
             </p>
 
         </div>
@@ -228,13 +215,13 @@ function showConnectionError(message) {
 async function loadBusinesses() {
 
     console.log(
-        "PanchGo: iniciando carga de negocios..."
+        "PanchGo: cargando negocios..."
     );
 
 
     if (!supabaseClient) {
 
-        showConnectionError(
+        showBusinessError(
             "El cliente de Supabase no pudo iniciarse."
         );
 
@@ -273,10 +260,11 @@ async function loadBusinesses() {
 
     try {
 
-        console.log(
-            "PanchGo: consultando tabla Businesses..."
-        );
-
+        /*
+         * IMPORTANTE:
+         * Usamos los nombres EXACTOS de las columnas
+         * que aparecen en tu tabla Businesses.
+         */
 
         const {
             data,
@@ -284,15 +272,19 @@ async function loadBusinesses() {
         } =
             await supabaseClient
                 .from("Businesses")
-                .select("*");
+                .select(
+                    '"ID", "Name", "Descripción", "Active"'
+                )
+                .eq(
+                    "Active",
+                    true
+                );
 
 
         console.log(
-            "PanchGo: respuesta Businesses:",
-            {
-                data: data,
-                error: error
-            }
+            "PanchGo - respuesta Businesses:",
+            data,
+            error
         );
 
 
@@ -303,14 +295,53 @@ async function loadBusinesses() {
         }
 
 
+        if (!data) {
+
+            throw new Error(
+                "Supabase no devolvió datos."
+            );
+
+        }
+
+
         console.log(
-            "PanchGo: negocios encontrados:",
-            data
+            "PanchGo - negocios encontrados:",
+            data.length
         );
 
 
+        /*
+         * Convertimos los nombres de columnas
+         * de Supabase al formato que usa nuestro
+         * resto del JavaScript.
+         */
+
+        const normalizedBusinesses =
+            data.map(
+                function (business) {
+
+                    return {
+
+                        id:
+                            business.ID,
+
+                        name:
+                            business.Name,
+
+                        description:
+                            business["Descripción"],
+
+                        active:
+                            business.Active
+
+                    };
+
+                }
+            );
+
+
         renderBusinesses(
-            data || []
+            normalizedBusinesses
         );
 
 
@@ -322,29 +353,20 @@ async function loadBusinesses() {
         );
 
 
-        let errorMessage =
-            "No se pudo consultar la tabla Businesses.";
+        let message =
+            "No se pudieron cargar los negocios.";
 
 
-        if (error) {
+        if (error && error.message) {
 
-            if (error.message) {
-
-                errorMessage =
-                    error.message;
-
-            } else {
-
-                errorMessage =
-                    JSON.stringify(error);
-
-            }
+            message =
+                error.message;
 
         }
 
 
-        showConnectionError(
-            errorMessage
+        showBusinessError(
+            message
         );
 
     }
@@ -369,7 +391,7 @@ function renderBusinesses(
     if (!businessList) {
 
         console.error(
-            "No existe .business-list en index.html."
+            "No existe .business-list."
         );
 
         return;
@@ -397,7 +419,7 @@ function renderBusinesses(
 
                 <p>
                     La conexión con Supabase funciona,
-                    pero la consulta no encontró negocios.
+                    pero no encontramos negocios activos.
                 </p>
 
             </div>
@@ -494,6 +516,7 @@ async function openBusiness(
     selectedBusiness =
         business.id;
 
+
     selectedBusinessData =
         business;
 
@@ -560,11 +583,6 @@ async function loadProducts(
 
     try {
 
-        console.log(
-            "PanchGo: consultando Products..."
-        );
-
-
         const {
             data,
             error
@@ -579,11 +597,9 @@ async function loadProducts(
 
 
         console.log(
-            "PanchGo: respuesta Products:",
-            {
-                data: data,
-                error: error
-            }
+            "PanchGo - productos:",
+            data,
+            error
         );
 
 
@@ -607,7 +623,7 @@ async function loadProducts(
         );
 
 
-        const errorMessage =
+        const message =
             error && error.message
                 ? error.message
                 : "No se pudieron cargar los productos.";
@@ -624,7 +640,7 @@ async function loadProducts(
                 </h3>
 
                 <p>
-                    ${errorMessage}
+                    ${message}
                 </p>
 
             </div>
@@ -690,6 +706,7 @@ function renderProducts(
 
             const productId =
                 product.Id ||
+                product.ID ||
                 product.id;
 
 
@@ -702,6 +719,7 @@ function renderProducts(
             const productDescription =
                 product.Description ||
                 product.description ||
+                product["Descripción"] ||
                 "";
 
 
@@ -778,6 +796,7 @@ function addToCart(
 
     const productId =
         product.Id ||
+        product.ID ||
         product.id;
 
 
@@ -1198,7 +1217,6 @@ sendOrderButton.addEventListener(
             );
 
             return;
-
         }
 
 
@@ -1213,7 +1231,6 @@ sendOrderButton.addEventListener(
             customerName.focus();
 
             return;
-
         }
 
 
@@ -1228,7 +1245,6 @@ sendOrderButton.addEventListener(
             customerPhone.focus();
 
             return;
-
         }
 
 
@@ -1243,7 +1259,6 @@ sendOrderButton.addEventListener(
             customerAddress.focus();
 
             return;
-
         }
 
 
@@ -1258,7 +1273,6 @@ sendOrderButton.addEventListener(
             paymentMethod.focus();
 
             return;
-
         }
 
 
