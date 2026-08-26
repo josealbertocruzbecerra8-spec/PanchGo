@@ -1,6 +1,6 @@
 /* =========================================================
    PANCHGO
-   SCRIPT COMPLETO + SUPABASE
+   SCRIPT COMPLETO + SUPABASE REST API
 ========================================================= */
 
 
@@ -9,17 +9,114 @@
 ========================================================= */
 
 const SUPABASE_URL =
-    "https://vciekecvbqvlbavxhmfz.supabase.co/rest/v1/";
+    "https://vciekecvbqvlbavxhmfz.supabase.co";
 
 const SUPABASE_KEY =
     "sb_publishable_1wRntDky8YlSGLmynI8O5Q_lNSbWMbu";
 
 
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
+/* =========================================================
+   FUNCIÓN GENERAL PARA SUPABASE
+========================================================= */
+
+async function supabaseRequest(
+    table,
+    options = {}
+) {
+
+    const {
+        select = "*",
+        filters = "",
+        order = ""
+    } = options;
+
+
+    let url =
+        SUPABASE_URL +
+        "/rest/v1/" +
+        table +
+        "?select=" +
+        encodeURIComponent(select);
+
+
+    if (filters) {
+
+        url +=
+            "&" +
+            filters;
+    }
+
+
+    if (order) {
+
+        url +=
+            "&order=" +
+            encodeURIComponent(order);
+    }
+
+
+    const response =
+        await fetch(
+            url,
+            {
+                method: "GET",
+
+                headers: {
+
+                    "apikey":
+                        SUPABASE_KEY,
+
+                    "Authorization":
+                        "Bearer " +
+                        SUPABASE_KEY,
+
+                    "Content-Type":
+                        "application/json",
+
+                    "Accept":
+                        "application/json"
+                }
+            }
+        );
+
+
+    const text =
+        await response.text();
+
+
+    let data;
+
+
+    try {
+
+        data =
+            text
+                ? JSON.parse(text)
+                : null;
+
+    } catch {
+
+        data = text;
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Supabase HTTP " +
+            response.status +
+            ": " +
+            (
+                typeof data === "string"
+                    ? data
+                    : JSON.stringify(data)
+            )
+        );
+    }
+
+
+    return data;
+}
 
 
 /* =========================================================
@@ -38,35 +135,53 @@ let selectedBusinessData = null;
 ========================================================= */
 
 const cartButton =
-    document.getElementById("cartButton");
+    document.getElementById(
+        "cartButton"
+    );
 
 const cartCount =
-    document.getElementById("cartCount");
+    document.getElementById(
+        "cartCount"
+    );
 
 
 const foodButton =
-    document.getElementById("foodButton");
+    document.getElementById(
+        "foodButton"
+    );
 
 const storesButton =
-    document.getElementById("storesButton");
+    document.getElementById(
+        "storesButton"
+    );
 
 
 const heroFoodButton =
-    document.getElementById("heroFoodButton");
+    document.getElementById(
+        "heroFoodButton"
+    );
 
 const heroStoreButton =
-    document.getElementById("heroStoreButton");
+    document.getElementById(
+        "heroStoreButton"
+    );
 
 
 const businessSection =
-    document.getElementById("businessSection");
+    document.getElementById(
+        "businessSection"
+    );
 
 const storeSection =
-    document.getElementById("storeSection");
+    document.getElementById(
+        "storeSection"
+    );
 
 
 const productsSection =
-    document.getElementById("productsSection");
+    document.getElementById(
+        "productsSection"
+    );
 
 const productsBusinessName =
     document.getElementById(
@@ -85,10 +200,14 @@ const productGrid =
 
 
 const cartSection =
-    document.getElementById("cartSection");
+    document.getElementById(
+        "cartSection"
+    );
 
 const cartItems =
-    document.getElementById("cartItems");
+    document.getElementById(
+        "cartItems"
+    );
 
 
 const cartSubtotal =
@@ -167,66 +286,81 @@ const joinBusinessButton =
 
 async function loadBusinesses() {
 
+    const businessList =
+        document.querySelector(
+            ".business-list"
+        );
+
+
+    if (!businessList) {
+
+        return;
+    }
+
+
+    businessList.innerHTML = `
+
+        <div class="empty-message">
+
+            <span>⏳</span>
+
+            <h3>
+                Cargando negocios...
+            </h3>
+
+        </div>
+
+    `;
+
+
     try {
 
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-                .from("Businesses")
-                .select("*")
-                .order("name");
-
-
-        if (error) {
-
-            console.error(
-                "ERROR BUSINESSES:",
-                error
+        const businesses =
+            await supabaseRequest(
+                "Businesses",
+                {
+                    select: "*",
+                    order: "name.asc"
+                }
             );
 
-            throw error;
-        }
+
+        console.log(
+            "BUSINESSES:",
+            businesses
+        );
 
 
         renderBusinesses(
-            data || []
+            businesses || []
         );
 
 
     } catch (error) {
 
         console.error(
-            "No se pudieron cargar los negocios:",
+            "ERROR CARGANDO BUSINESSES:",
             error
         );
 
 
-        const businessList =
-            document.querySelector(
-                ".business-list"
-            );
+        businessList.innerHTML = `
 
+            <div class="empty-message">
 
-        if (businessList) {
+                <span>⚠️</span>
 
-            businessList.innerHTML = `
-                <div class="empty-message">
+                <h3>
+                    No pudimos cargar los negocios.
+                </h3>
 
-                    <span>⚠️</span>
+                <p>
+                    ${error.message}
+                </p>
 
-                    <h3>
-                        No pudimos cargar los negocios.
-                    </h3>
+            </div>
 
-                    <p>
-                        Revisa la conexión con Supabase.
-                    </p>
-
-                </div>
-            `;
-        }
+        `;
     }
 }
 
@@ -260,6 +394,7 @@ function renderBusinesses(
     ) {
 
         businessList.innerHTML = `
+
             <div class="empty-message">
 
                 <span>🏪</span>
@@ -269,10 +404,11 @@ function renderBusinesses(
                 </h3>
 
                 <p>
-                    Próximamente habrá negocios disponibles.
+                    Todavía no hay negocios registrados.
                 </p>
 
             </div>
+
         `;
 
         return;
@@ -327,6 +463,7 @@ function renderBusinesses(
                 <span class="business-arrow">
                     ›
                 </span>
+
             `;
 
 
@@ -379,9 +516,15 @@ async function openBusiness(
 
     productGrid.innerHTML = `
 
-        <p>
-            Cargando productos...
-        </p>
+        <div class="empty-message">
+
+            <span>⏳</span>
+
+            <h3>
+                Cargando productos...
+            </h3>
+
+        </div>
 
     `;
 
@@ -407,44 +550,42 @@ async function loadProducts(
 
     try {
 
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-                .from("Products")
-                .select("*")
-                .eq(
-                    "Businesses_id",
-                    businessId
-                )
-                .eq(
-                    "Active",
-                    true
-                )
-                .order("name");
+        const filters =
+            "Businesses_id=eq." +
+            encodeURIComponent(
+                businessId
+            ) +
+            "&Active=eq.true";
 
 
-        if (error) {
-
-            console.error(
-                "ERROR PRODUCTS:",
-                error
+        const products =
+            await supabaseRequest(
+                "Products",
+                {
+                    select: "*",
+                    filters:
+                        filters,
+                    order:
+                        "name.asc"
+                }
             );
 
-            throw error;
-        }
+
+        console.log(
+            "PRODUCTS:",
+            products
+        );
 
 
         renderProducts(
-            data || []
+            products || []
         );
 
 
     } catch (error) {
 
         console.error(
-            "No se pudieron cargar los productos:",
+            "ERROR CARGANDO PRODUCTS:",
             error
         );
 
@@ -460,7 +601,7 @@ async function loadProducts(
                 </h3>
 
                 <p>
-                    Revisa la conexión con Supabase.
+                    ${error.message}
                 </p>
 
             </div>
@@ -497,7 +638,7 @@ function renderProducts(
                 </h3>
 
                 <p>
-                    Próximamente habrá productos disponibles.
+                    Agrega productos desde Supabase.
                 </p>
 
             </div>
@@ -519,10 +660,6 @@ function renderProducts(
 
             productCard.className =
                 "product-card";
-
-
-            const productId =
-                product.Id;
 
 
             const productName =
@@ -603,6 +740,14 @@ function renderProducts(
 function addToCart(
     product
 ) {
+
+    if (
+        !selectedBusinessData
+    ) {
+
+        return;
+    }
+
 
     const existingProduct =
         cart.find(
