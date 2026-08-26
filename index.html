@@ -1,3 +1,5 @@
+"index.html" completo
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -53,7 +55,6 @@
 
     </section>
 
-
     <section class="categories">
 
         <h2>¿Qué quieres pedir?</h2>
@@ -65,67 +66,54 @@
         <div class="category-grid">
 
             <button class="category-card" id="foodButton">
-
                 <span class="category-icon">🍔</span>
-
                 <strong>Comida</strong>
-
-                <span>
-                    Restaurantes y comida local
-                </span>
-
+                <span>Restaurantes y comida local</span>
             </button>
 
-
             <button class="category-card" id="storesButton">
-
                 <span class="category-icon">🛍️</span>
-
                 <strong>Tiendas</strong>
-
-                <span>
-                    Productos y negocios locales
-                </span>
-
+                <span>Productos y negocios locales</span>
             </button>
 
         </div>
 
     </section>
-
 
     <section class="business-section" id="businessSection">
 
         <div class="section-heading">
 
             <div>
-
-                <span class="section-tag">
-                    DESCUBRE
-                </span>
-
-                <h2>
-                    Negocios locales
-                </h2>
-
+                <span class="section-tag">DESCUBRE</span>
+                <h2>Negocios locales</h2>
             </div>
 
         </div>
 
-        <div class="business-list"></div>
+        <div class="business-list">
+
+            <div class="empty-message">
+                <span>⏳</span>
+
+                <h3>Cargando negocios...</h3>
+
+                <p>
+                    Conectando con PanchGo.
+                </p>
+            </div>
+
+        </div>
 
     </section>
-
 
     <section class="products-section" id="productsSection">
 
         <div class="section-heading">
 
             <div>
-
-                <span class="section-tag">
-                    MENÚ
-                </span>
+                <span class="section-tag">MENÚ</span>
 
                 <h2 id="productsBusinessName">
                     Selecciona un negocio
@@ -149,16 +137,11 @@
 
     </section>
 
-
     <section class="cart-section" id="cartSection">
 
-        <span class="section-tag">
-            TU PEDIDO
-        </span>
+        <span class="section-tag">TU PEDIDO</span>
 
-        <h2>
-            Carrito
-        </h2>
+        <h2>Carrito</h2>
 
         <div id="cartItems">
 
@@ -166,9 +149,7 @@
 
                 🛒
 
-                <h3>
-                    Tu carrito está vacío
-                </h3>
+                <h3>Tu carrito está vacío</h3>
 
                 <p>
                     Agrega productos de un negocio
@@ -179,55 +160,28 @@
 
         </div>
 
-
         <div class="cart-summary">
 
             <div>
-
-                <span>
-                    Productos
-                </span>
-
-                <strong id="cartSubtotal">
-                    $0.00
-                </strong>
-
+                <span>Productos</span>
+                <strong id="cartSubtotal">$0.00</strong>
             </div>
-
 
             <div>
-
-                <span>
-                    Envío
-                </span>
-
-                <strong id="deliveryCost">
-                    $0.00
-                </strong>
-
+                <span>Envío</span>
+                <strong id="deliveryCost">$0.00</strong>
             </div>
 
-
             <div class="cart-total-row">
-
-                <span>
-                    Total
-                </span>
-
-                <strong id="cartTotal">
-                    $0.00
-                </strong>
-
+                <span>Total</span>
+                <strong id="cartTotal">$0.00</strong>
             </div>
 
         </div>
 
-
         <div class="order-form">
 
-            <h3>
-                Datos de entrega
-            </h3>
+            <h3>Datos de entrega</h3>
 
             <input
                 type="text"
@@ -247,7 +201,6 @@
                 rows="3"
             ></textarea>
 
-
             <select id="paymentMethod">
 
                 <option value="">
@@ -264,7 +217,6 @@
 
             </select>
 
-
             <button
                 class="primary-button"
                 id="sendOrderButton"
@@ -276,29 +228,17 @@
 
     </section>
 
+    <section class="store-section" id="storeSection">
 
-    <section
-        class="store-section"
-        id="storeSection"
-    >
+        <span class="section-tag">PRÓXIMAMENTE</span>
 
-        <span class="section-tag">
-            PRÓXIMAMENTE
-        </span>
-
-        <h2>
-            Tiendas y productos
-        </h2>
+        <h2>Tiendas y productos</h2>
 
         <div class="empty-message">
 
-            <span>
-                🛍️
-            </span>
+            <span>🛍️</span>
 
-            <h3>
-                Estamos preparando algo grande.
-            </h3>
+            <h3>Estamos preparando algo grande.</h3>
 
             <p>
                 Muy pronto podrás encontrar más tiendas,
@@ -309,62 +249,45 @@
 
     </section>
 
-
     <section class="welcome-section">
 
-        <span class="section-tag">
-            PANCHGO
-        </span>
+        <span class="section-tag">PANCHGO</span>
 
-        <h2>
-            ¿Cómo funciona?
-        </h2>
+        <h2>¿Cómo funciona?</h2>
 
         <p class="section-subtitle">
             Pedir será cada vez más fácil.
         </p>
 
-
         <div class="steps">
 
             <div class="step">
                 <strong>1</strong>
-                <p>
-                    Elige un negocio
-                </p>
+                <p>Elige un negocio</p>
             </div>
 
             <div class="step">
                 <strong>2</strong>
-                <p>
-                    Selecciona tus productos
-                </p>
+                <p>Selecciona tus productos</p>
             </div>
 
             <div class="step">
                 <strong>3</strong>
-                <p>
-                    Indica dónde entregar
-                </p>
+                <p>Indica dónde entregar</p>
             </div>
 
             <div class="step">
                 <strong>4</strong>
-                <p>
-                    Recibe tu pedido
-                </p>
+                <p>Recibe tu pedido</p>
             </div>
 
         </div>
 
     </section>
 
-
     <section class="join-section">
 
-        <span class="section-tag">
-            ¿TIENES UN NEGOCIO?
-        </span>
+        <span class="section-tag">¿TIENES UN NEGOCIO?</span>
 
         <h2>
             Tu negocio también puede ser parte de PanchGo.
@@ -386,14 +309,9 @@
 
 </main>
 
-
 <footer>
 
-    <p>
-        <strong>
-            PanchGo
-        </strong>
-    </p>
+    <p><strong>PanchGo</strong></p>
 
     <p>
         San Pancho se mueve. 🛵
@@ -404,7 +322,6 @@
     </p>
 
 </footer>
-
 
 <div
     class="modal"
@@ -441,12 +358,9 @@
 
 </div>
 
-
-<!-- SUPABASE -->
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- PANCHGO -->
+<!-- IMPORTANTE:
+     Supabase debe cargarse ANTES de script.js.
+-->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js"></script>
