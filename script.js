@@ -1062,9 +1062,9 @@ function updateCart() {
 
 
     const delivery =
-        cart.length > 0
-            ? DELIVERY_COST
-            : 0;
+    cart.length > 0
+        ? 25
+        : 0;
 
 
     const total =
