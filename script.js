@@ -2,7 +2,7 @@
    PANCHGO
    SCRIPT COMPLETO
    SUPABASE — BUSINESSES + PRODUCTS
-   PRUEBA: MOSTRAR TODOS LOS PRODUCTOS
+   PEDIDOS — WHATSAPP
 ========================================================= */
 
 
@@ -15,6 +15,20 @@ const SUPABASE_URL =
 
 const SUPABASE_KEY =
     "sb_publishable_1wRntDky8YlSGLmynI8O5Q_lNSbWMbu";
+
+
+/* =========================================================
+   CONFIGURACIÓN PANCHGO
+========================================================= */
+
+const DELIVERY_COST = 20;
+
+/*
+ * Número de WhatsApp que recibirá los pedidos.
+ * Formato internacional sin +, espacios ni guiones.
+ */
+const PANCHGO_WHATSAPP =
+    "525629913802";
 
 
 /* =========================================================
@@ -162,7 +176,6 @@ function showBusinessMessage(
         );
 
     if (!businessList) {
-
         return;
     }
 
@@ -197,7 +210,6 @@ function showProductMessage(
 ) {
 
     if (!productGrid) {
-
         return;
     }
 
@@ -223,7 +235,6 @@ function showProductMessage(
 
 /* =========================================================
    CARGAR NEGOCIOS
-   ESTA PARTE SE MANTIENE COMO LA VERSIÓN QUE FUNCIONABA
 ========================================================= */
 
 async function loadBusinesses() {
@@ -509,7 +520,7 @@ async function openBusiness(
 
     showProductMessage(
         "Cargando productos...",
-        "Buscando todos los productos.",
+        "Buscando el catálogo de este negocio.",
         "⏳"
     );
 
@@ -525,7 +536,7 @@ async function openBusiness(
 
 /* =========================================================
    CARGAR PRODUCTOS
-   PRUEBA SIN FILTRO DE NEGOCIO
+   FILTRADOS POR NEGOCIO
 ========================================================= */
 
 async function loadProducts(
@@ -533,18 +544,8 @@ async function loadProducts(
 ) {
 
     console.log(
-        "PanchGo: iniciando prueba de TODOS los productos."
-    );
-
-    console.log(
-        "PanchGo negocio seleccionado:",
+        "PanchGo: cargando productos del negocio:",
         businessId
-    );
-
-    showProductMessage(
-        "Cargando productos...",
-        "Consultando el catálogo completo.",
-        "⏳"
     );
 
     const controller =
@@ -565,19 +566,25 @@ async function loadProducts(
         /*
          * IMPORTANTE:
          *
-         * No filtramos Businesses_id.
+         * Ahora sí filtramos Businesses_id.
          *
-         * Primero queremos comprobar que la página
-         * puede leer Products directamente.
+         * Esto hace que cada negocio solamente
+         * muestre sus propios productos.
          */
 
         const url =
             SUPABASE_URL +
             "/rest/v1/Products" +
-            "?select=*";
+            "?select=%22Id%22,name,%22Description%22,%22Price%22,%22Active%22,%22Businesses_id%22" +
+            "&Businesses_id=eq." +
+            encodeURIComponent(
+                businessId
+            ) +
+            "&%22Active%22=eq.true" +
+            "&order=name";
 
         console.log(
-            "PanchGo URL TODOS LOS PRODUCTOS:",
+            "PanchGo URL productos:",
             url
         );
 
@@ -618,7 +625,7 @@ async function loadProducts(
             await response.text();
 
         console.log(
-            "PanchGo respuesta TODOS los productos:",
+            "PanchGo respuesta productos:",
             responseText
         );
 
@@ -658,7 +665,7 @@ async function loadProducts(
         }
 
         console.log(
-            "PanchGo TOTAL PRODUCTOS:",
+            "PanchGo productos recibidos:",
             data.length
         );
 
@@ -667,108 +674,16 @@ async function loadProducts(
         ) {
 
             showProductMessage(
-                "No hay productos.",
-                "Supabase no devolvió ningún registro de Products.",
+                "Sin productos todavía.",
+                "Este negocio todavía no tiene productos disponibles.",
                 "🍽️"
             );
 
             return;
         }
 
-
-        /* =================================================
-           MOSTRAR TODOS LOS PRODUCTOS
-        ================================================= */
-
-        productGrid.innerHTML = "";
-
-        data.forEach(
-            function (product) {
-
-                const productCard =
-                    document.createElement(
-                        "div"
-                    );
-
-                productCard.className =
-                    "product-card";
-
-
-                const productName =
-                    product.name ||
-                    "Producto";
-
-
-                const productDescription =
-                    product["Description"] ||
-                    "";
-
-
-                const productPrice =
-                    Number(
-                        product["Price"] || 0
-                    );
-
-
-                const businessIdFromProduct =
-                    product["Businesses_id"] ||
-                    "Sin Business ID";
-
-
-                const activeStatus =
-                    product["Active"];
-
-
-                productCard.innerHTML = `
-
-                    <div class="product-info">
-
-                        <h3>
-                            ${productName}
-                        </h3>
-
-                        <p>
-                            ${productDescription}
-                        </p>
-
-                        <strong>
-                            $${productPrice.toFixed(2)}
-                        </strong>
-
-                        <p>
-                            <small>
-                                Business ID:
-                                ${businessIdFromProduct}
-                            </small>
-                        </p>
-
-                        <p>
-                            <small>
-                                Active:
-                                ${activeStatus}
-                            </small>
-                        </p>
-
-                    </div>
-
-                `;
-
-
-                productGrid.appendChild(
-                    productCard
-                );
-
-            }
-        );
-
-
-        /*
-         * Si llegamos aquí, la página logró leer
-         * correctamente Products.
-         */
-
-        console.log(
-            "PanchGo: TODOS LOS PRODUCTOS FUERON MOSTRADOS."
+        renderProducts(
+            data
         );
 
     } catch (error) {
@@ -806,13 +721,131 @@ async function loadProducts(
 
 
 /* =========================================================
-   CARRITO
-   SE MANTIENE PARA NO ROMPER LA PÁGINA
+   MOSTRAR PRODUCTOS
+========================================================= */
+
+function renderProducts(
+    products
+) {
+
+    productGrid.innerHTML = "";
+
+    products.forEach(
+        function (product) {
+
+            const productCard =
+                document.createElement(
+                    "div"
+                );
+
+            productCard.className =
+                "product-card";
+
+            const productName =
+                product.name ||
+                "Producto";
+
+            const productDescription =
+                product["Description"] ||
+                "";
+
+            const productPrice =
+                Number(
+                    product["Price"] || 0
+                );
+
+            productCard.innerHTML = `
+
+                <div class="product-info">
+
+                    <h3>
+                        ${productName}
+                    </h3>
+
+                    <p>
+                        ${productDescription}
+                    </p>
+
+                    <strong>
+                        $${productPrice.toFixed(2)}
+                    </strong>
+
+                </div>
+
+                <button
+                    class="primary-button add-product-button"
+                    type="button"
+                >
+                    Agregar
+                </button>
+
+            `;
+
+            const addButton =
+                productCard.querySelector(
+                    ".add-product-button"
+                );
+
+            addButton.addEventListener(
+                "click",
+                function () {
+
+                    addToCart(
+                        product
+                    );
+
+                }
+            );
+
+            productGrid.appendChild(
+                productCard
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   AGREGAR AL CARRITO
 ========================================================= */
 
 function addToCart(
     product
 ) {
+
+    const productBusinessId =
+        product["Businesses_id"] ||
+        selectedBusiness;
+
+
+    /*
+     * NO PERMITIR PRODUCTOS DE DIFERENTES NEGOCIOS
+     */
+
+    if (
+        cart.length > 0
+    ) {
+
+        const currentCartBusinessId =
+            cart[0].businessId;
+
+        if (
+            String(
+                currentCartBusinessId
+            ) !==
+            String(
+                productBusinessId
+            )
+        ) {
+
+            alert(
+                "Tu carrito contiene productos de otro negocio.\n\nFinaliza ese pedido antes de agregar productos de este negocio."
+            );
+
+            return;
+        }
+    }
+
 
     const existingProduct =
         cart.find(
@@ -825,6 +858,7 @@ function addToCart(
 
             }
         );
+
 
     if (existingProduct) {
 
@@ -854,9 +888,8 @@ function addToCart(
                     : "Negocio",
 
             businessId:
-                selectedBusinessData
-                    ? selectedBusinessData.id
-                    : null
+                productBusinessId
+
         });
     }
 
@@ -954,6 +987,7 @@ function updateCart() {
                             class="quantity-button"
                             data-id="${item.id}"
                             data-action="minus"
+                            type="button"
                         >
                             −
                         </button>
@@ -966,6 +1000,7 @@ function updateCart() {
                             class="quantity-button"
                             data-id="${item.id}"
                             data-action="plus"
+                            type="button"
                         >
                             +
                         </button>
@@ -1028,7 +1063,7 @@ function updateCart() {
 
     const delivery =
         cart.length > 0
-            ? 20
+            ? DELIVERY_COST
             : 0;
 
 
@@ -1070,7 +1105,6 @@ function changeQuantity(
         );
 
     if (!item) {
-
         return;
     }
 
@@ -1301,9 +1335,7 @@ function createOrderPreview() {
 
 
     const delivery =
-        cart.length > 0
-            ? 20
-            : 0;
+        DELIVERY_COST;
 
 
     const total =
@@ -1337,6 +1369,59 @@ function createOrderPreview() {
 
         }
     );
+
+
+    let paymentNotice = "";
+
+
+    if (
+        paymentMethod.value ===
+        "Efectivo"
+    ) {
+
+        paymentNotice = `
+
+            <div class="order-payment-notice">
+
+                <strong>
+                    ⚠️ PAGO EN EFECTIVO
+                </strong>
+
+                <p>
+                    El cliente deberá entregar
+                    el efectivo al repartidor.
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+
+    if (
+        paymentMethod.value ===
+        "Transferencia"
+    ) {
+
+        paymentNotice = `
+
+            <div class="order-payment-notice">
+
+                <strong>
+                    📲 PAGO POR TRANSFERENCIA
+                </strong>
+
+                <p>
+                    Verificar la transferencia
+                    antes de entregar el pedido.
+                </p>
+
+            </div>
+
+        `;
+
+    }
 
 
     orderPreview.innerHTML = `
@@ -1409,6 +1494,8 @@ function createOrderPreview() {
                 ${paymentMethod.value}
             </p>
 
+            ${paymentNotice}
+
         </div>
 
     `;
@@ -1437,6 +1524,7 @@ if (whatsappOrderButton) {
                 return;
             }
 
+
             const subtotal =
                 cart.reduce(
                     function (
@@ -1456,23 +1544,29 @@ if (whatsappOrderButton) {
                     0
                 );
 
+
             const delivery =
-                20;
+                DELIVERY_COST;
+
 
             const total =
                 subtotal +
                 delivery;
 
+
             let message =
                 "🛵 *NUEVO PEDIDO PANCHGO*\n\n";
+
 
             message +=
                 "*Negocio:* " +
                 cart[0].business +
                 "\n\n";
 
+
             message +=
                 "*Productos:*\n";
+
 
             cart.forEach(
                 function (item) {
@@ -1491,49 +1585,96 @@ if (whatsappOrderButton) {
                 }
             );
 
+
             message +=
                 "\n*Productos:* $" +
                 subtotal.toFixed(2);
+
 
             message +=
                 "\n*Envío:* $" +
                 delivery.toFixed(2);
 
+
             message +=
                 "\n*TOTAL:* $" +
                 total.toFixed(2);
 
+
             message +=
                 "\n\n*Cliente:* " +
-                customerName.value;
+                customerName.value.trim();
+
 
             message +=
                 "\n*Teléfono:* " +
-                customerPhone.value;
+                customerPhone.value.trim();
+
 
             message +=
                 "\n*Dirección:* " +
-                customerAddress.value;
+                customerAddress.value.trim();
+
 
             message +=
                 "\n*Forma de pago:* " +
                 paymentMethod.value;
 
-            const whatsappNumber =
-                "5210000000000";
+
+            /*
+             * ADVERTENCIA ESPECIAL PARA EFECTIVO
+             */
+
+            if (
+                paymentMethod.value ===
+                "Efectivo"
+            ) {
+
+                message +=
+                    "\n\n⚠️ *IMPORTANTE:* COBRAR AL CLIENTE ANTES DE PAGAR/RECOGER EL PEDIDO.";
+
+            }
+
+
+            /*
+             * INFORMACIÓN PARA TRANSFERENCIA
+             */
+
+            if (
+                paymentMethod.value ===
+                "Transferencia"
+            ) {
+
+                message +=
+                    "\n\n📲 *IMPORTANTE:* VERIFICAR LA TRANSFERENCIA ANTES DE ENTREGAR EL PEDIDO.";
+
+            }
+
+
+            message +=
+                "\n\n*FLUJO PANCHGO:* Contactar al negocio → preparar pedido → recoger → entregar al cliente.";
+
 
             const whatsappURL =
                 "https://wa.me/" +
-                whatsappNumber +
+                PANCHGO_WHATSAPP +
                 "?text=" +
                 encodeURIComponent(
                     message
                 );
 
+
+            console.log(
+                "PanchGo WhatsApp:",
+                whatsappURL
+            );
+
+
             window.open(
                 whatsappURL,
                 "_blank"
             );
+
         }
     );
 }
