@@ -1355,4 +1355,149 @@ if (joinBusinessButton) {
 
 updateCart();
 
-loadBusinesses();
+async function loadProducts(businessId) {
+
+    console.log(
+        "PanchGo: cargando productos del negocio:",
+        businessId
+    );
+
+    showProductMessage(
+        "Cargando productos...",
+        "Buscando el catálogo de este negocio.",
+        "⏳"
+    );
+
+    try {
+
+        const url =
+            SUPABASE_URL +
+            "/rest/v1/Products" +
+            "?select=*";
+
+        console.log(
+            "PanchGo URL TODOS LOS PRODUCTOS:",
+            url
+        );
+
+        const response =
+            await fetch(
+                url,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "apikey":
+                            SUPABASE_KEY,
+
+                        "Authorization":
+                            "Bearer " +
+                            SUPABASE_KEY,
+
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+        console.log(
+            "PanchGo HTTP productos:",
+            response.status
+        );
+
+        const responseText =
+            await response.text();
+
+        console.log(
+            "PanchGo respuesta TODOS LOS PRODUCTOS:",
+            responseText
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Supabase respondió HTTP " +
+                response.status +
+                ": " +
+                responseText
+            );
+        }
+
+        const data =
+            JSON.parse(responseText);
+
+        if (!Array.isArray(data)) {
+
+            throw new Error(
+                "Supabase no devolvió una lista de productos."
+            );
+        }
+
+        console.log(
+            "PanchGo total de productos recibidos:",
+            data.length
+        );
+
+        /*
+         * Filtramos AQUÍ en JavaScript.
+         * Ya no dependemos del filtro Businesses_id
+         * de la URL de Supabase.
+         */
+
+        const businessProducts =
+            data.filter(
+                function (product) {
+
+                    return (
+                        String(
+                            product["Businesses_id"]
+                        ).toLowerCase() ===
+                        String(
+                            businessId
+                        ).toLowerCase()
+                    );
+
+                }
+            );
+
+        console.log(
+            "PanchGo productos del negocio:",
+            businessProducts
+        );
+
+        console.log(
+            "PanchGo cantidad productos del negocio:",
+            businessProducts.length
+        );
+
+        if (
+            businessProducts.length === 0
+        ) {
+
+            showProductMessage(
+                "Sin productos todavía.",
+                "No se encontraron productos relacionados con este negocio.",
+                "🍽️"
+            );
+
+            return;
+        }
+
+        renderProducts(
+            businessProducts
+        );
+
+    } catch (error) {
+
+        console.error(
+            "PanchGo ERROR PRODUCTS:",
+            error
+        );
+
+        showProductMessage(
+            "Error al cargar productos.",
+            error.message,
+            "⚠️"
+        );
+    }
+}
