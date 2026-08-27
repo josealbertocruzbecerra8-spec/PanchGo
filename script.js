@@ -21,7 +21,7 @@ const SUPABASE_KEY =
    CONFIGURACIÓN PANCHGO
 ========================================================= */
 
-const DELIVERY_COST = 20;
+const DELIVERY_COST = 25;
 
 /*
  * Número de WhatsApp que recibirá los pedidos.
