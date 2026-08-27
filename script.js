@@ -2,6 +2,12 @@
    PANCHGO
    SCRIPT COMPLETO
    SUPABASE — BUSINESSES + PRODUCTS
+   PRUEBA: MOSTRAR TODOS LOS PRODUCTOS
+========================================================= */
+
+
+/* =========================================================
+   SUPABASE
 ========================================================= */
 
 const SUPABASE_URL =
@@ -16,7 +22,9 @@ const SUPABASE_KEY =
 ========================================================= */
 
 let cart = [];
+
 let selectedBusiness = null;
+
 let selectedBusinessData = null;
 
 
@@ -52,13 +60,19 @@ const productsSection =
     document.getElementById("productsSection");
 
 const productsBusinessName =
-    document.getElementById("productsBusinessName");
+    document.getElementById(
+        "productsBusinessName"
+    );
 
 const productsBusinessDescription =
-    document.getElementById("productsBusinessDescription");
+    document.getElementById(
+        "productsBusinessDescription"
+    );
 
 const productGrid =
-    document.getElementById("productGrid");
+    document.getElementById(
+        "productGrid"
+    );
 
 const cartSection =
     document.getElementById("cartSection");
@@ -67,43 +81,69 @@ const cartItems =
     document.getElementById("cartItems");
 
 const cartSubtotal =
-    document.getElementById("cartSubtotal");
+    document.getElementById(
+        "cartSubtotal"
+    );
 
 const deliveryCost =
-    document.getElementById("deliveryCost");
+    document.getElementById(
+        "deliveryCost"
+    );
 
 const cartTotal =
-    document.getElementById("cartTotal");
+    document.getElementById(
+        "cartTotal"
+    );
 
 const customerName =
-    document.getElementById("customerName");
+    document.getElementById(
+        "customerName"
+    );
 
 const customerPhone =
-    document.getElementById("customerPhone");
+    document.getElementById(
+        "customerPhone"
+    );
 
 const customerAddress =
-    document.getElementById("customerAddress");
+    document.getElementById(
+        "customerAddress"
+    );
 
 const paymentMethod =
-    document.getElementById("paymentMethod");
+    document.getElementById(
+        "paymentMethod"
+    );
 
 const sendOrderButton =
-    document.getElementById("sendOrderButton");
+    document.getElementById(
+        "sendOrderButton"
+    );
 
 const orderModal =
-    document.getElementById("orderModal");
+    document.getElementById(
+        "orderModal"
+    );
 
 const orderPreview =
-    document.getElementById("orderPreview");
+    document.getElementById(
+        "orderPreview"
+    );
 
 const closeOrderModal =
-    document.getElementById("closeOrderModal");
+    document.getElementById(
+        "closeOrderModal"
+    );
 
 const whatsappOrderButton =
-    document.getElementById("whatsappOrderButton");
+    document.getElementById(
+        "whatsappOrderButton"
+    );
 
 const joinBusinessButton =
-    document.getElementById("joinBusinessButton");
+    document.getElementById(
+        "joinBusinessButton"
+    );
 
 
 /* =========================================================
@@ -117,22 +157,31 @@ function showBusinessMessage(
 ) {
 
     const businessList =
-        document.querySelector(".business-list");
+        document.querySelector(
+            ".business-list"
+        );
 
     if (!businessList) {
+
         return;
     }
 
     businessList.innerHTML = `
+
         <div class="empty-message">
 
             <span>${icon}</span>
 
-            <h3>${title}</h3>
+            <h3>
+                ${title}
+            </h3>
 
-            <p>${message}</p>
+            <p>
+                ${message}
+            </p>
 
         </div>
+
     `;
 }
 
@@ -148,25 +197,33 @@ function showProductMessage(
 ) {
 
     if (!productGrid) {
+
         return;
     }
 
     productGrid.innerHTML = `
+
         <div class="empty-message">
 
             <span>${icon}</span>
 
-            <h3>${title}</h3>
+            <h3>
+                ${title}
+            </h3>
 
-            <p>${message}</p>
+            <p>
+                ${message}
+            </p>
 
         </div>
+
     `;
 }
 
 
 /* =========================================================
    CARGAR NEGOCIOS
+   ESTA PARTE SE MANTIENE COMO LA VERSIÓN QUE FUNCIONABA
 ========================================================= */
 
 async function loadBusinesses() {
@@ -180,6 +237,19 @@ async function loadBusinesses() {
         "Conectando con Supabase.",
         "⏳"
     );
+
+    const controller =
+        new AbortController();
+
+    const timeout =
+        setTimeout(
+            function () {
+
+                controller.abort();
+
+            },
+            8000
+        );
 
     try {
 
@@ -201,7 +271,11 @@ async function loadBusinesses() {
                 {
                     method: "GET",
 
+                    signal:
+                        controller.signal,
+
                     headers: {
+
                         "apikey":
                             SUPABASE_KEY,
 
@@ -214,6 +288,10 @@ async function loadBusinesses() {
                     }
                 }
             );
+
+        clearTimeout(
+            timeout
+        );
 
         console.log(
             "PanchGo HTTP negocios:",
@@ -238,17 +316,34 @@ async function loadBusinesses() {
             );
         }
 
-        const data =
-            JSON.parse(responseText);
+        let data;
 
-        if (!Array.isArray(data)) {
+        try {
+
+            data =
+                JSON.parse(
+                    responseText
+                );
+
+        } catch (error) {
+
+            throw new Error(
+                "La respuesta de Supabase no es JSON."
+            );
+        }
+
+        if (
+            !Array.isArray(data)
+        ) {
 
             throw new Error(
                 "Supabase no devolvió una lista de negocios."
             );
         }
 
-        if (data.length === 0) {
+        if (
+            data.length === 0
+        ) {
 
             showBusinessMessage(
                 "No hay negocios disponibles.",
@@ -264,14 +359,34 @@ async function loadBusinesses() {
             data
         );
 
-        renderBusinesses(data);
+        renderBusinesses(
+            data
+        );
 
     } catch (error) {
+
+        clearTimeout(
+            timeout
+        );
 
         console.error(
             "PanchGo ERROR BUSINESSES:",
             error
         );
+
+        if (
+            error.name ===
+            "AbortError"
+        ) {
+
+            showBusinessMessage(
+                "Supabase no respondió.",
+                "La conexión tardó más de 8 segundos.",
+                "⏱️"
+            );
+
+            return;
+        }
 
         showBusinessMessage(
             "Error al cargar negocios.",
@@ -291,9 +406,16 @@ function renderBusinesses(
 ) {
 
     const businessList =
-        document.querySelector(".business-list");
+        document.querySelector(
+            ".business-list"
+        );
 
     if (!businessList) {
+
+        console.error(
+            "PanchGo: no existe .business-list"
+        );
+
         return;
     }
 
@@ -303,12 +425,15 @@ function renderBusinesses(
         function (business) {
 
             const button =
-                document.createElement("button");
+                document.createElement(
+                    "button"
+                );
 
             button.className =
                 "business-card";
 
             button.innerHTML = `
+
                 <div class="business-icon">
                     🏪
                 </div>
@@ -316,7 +441,10 @@ function renderBusinesses(
                 <div class="business-info">
 
                     <h3>
-                        ${business.name || "Negocio"}
+                        ${
+                            business.name ||
+                            "Negocio"
+                        }
                     </h3>
 
                     <p>
@@ -335,16 +463,23 @@ function renderBusinesses(
                 <span class="business-arrow">
                     ›
                 </span>
+
             `;
 
             button.addEventListener(
                 "click",
                 function () {
-                    openBusiness(business);
+
+                    openBusiness(
+                        business
+                    );
+
                 }
             );
 
-            businessList.appendChild(button);
+            businessList.appendChild(
+                button
+            );
         }
     );
 }
@@ -374,7 +509,7 @@ async function openBusiness(
 
     showProductMessage(
         "Cargando productos...",
-        "Buscando el catálogo de este negocio.",
+        "Buscando todos los productos.",
         "⏳"
     );
 
@@ -389,7 +524,8 @@ async function openBusiness(
 
 
 /* =========================================================
-   CARGAR PRODUCTOS — CORREGIDO
+   CARGAR PRODUCTOS
+   PRUEBA SIN FILTRO DE NEGOCIO
 ========================================================= */
 
 async function loadProducts(
@@ -397,42 +533,51 @@ async function loadProducts(
 ) {
 
     console.log(
-        "PanchGo: cargando productos del negocio:",
+        "PanchGo: iniciando prueba de TODOS los productos."
+    );
+
+    console.log(
+        "PanchGo negocio seleccionado:",
         businessId
     );
 
     showProductMessage(
         "Cargando productos...",
-        "Buscando el catálogo de este negocio.",
+        "Consultando el catálogo completo.",
         "⏳"
     );
+
+    const controller =
+        new AbortController();
+
+    const timeout =
+        setTimeout(
+            function () {
+
+                controller.abort();
+
+            },
+            8000
+        );
 
     try {
 
         /*
-         * La columna de relación se llama exactamente:
+         * IMPORTANTE:
          *
-         * "Businesses_id"
+         * No filtramos Businesses_id.
          *
-         * y es UUID.
+         * Primero queremos comprobar que la página
+         * puede leer Products directamente.
          */
-
-        const encodedBusinessId =
-            encodeURIComponent(
-                businessId
-            );
 
         const url =
             SUPABASE_URL +
             "/rest/v1/Products" +
-            "?select=*" +
-            "&%22Businesses_id%22=eq." +
-            encodedBusinessId +
-            "&%22Active%22=eq.true" +
-            "&order=name";
+            "?select=*";
 
         console.log(
-            "PanchGo URL productos:",
+            "PanchGo URL TODOS LOS PRODUCTOS:",
             url
         );
 
@@ -441,6 +586,9 @@ async function loadProducts(
                 url,
                 {
                     method: "GET",
+
+                    signal:
+                        controller.signal,
 
                     headers: {
 
@@ -457,6 +605,10 @@ async function loadProducts(
                 }
             );
 
+        clearTimeout(
+            timeout
+        );
+
         console.log(
             "PanchGo HTTP productos:",
             response.status
@@ -466,7 +618,7 @@ async function loadProducts(
             await response.text();
 
         console.log(
-            "PanchGo respuesta productos:",
+            "PanchGo respuesta TODOS los productos:",
             responseText
         );
 
@@ -485,16 +637,20 @@ async function loadProducts(
         try {
 
             data =
-                JSON.parse(responseText);
+                JSON.parse(
+                    responseText
+                );
 
         } catch (error) {
 
             throw new Error(
-                "La respuesta de productos no es JSON."
+                "La respuesta de Products no es JSON."
             );
         }
 
-        if (!Array.isArray(data)) {
+        if (
+            !Array.isArray(data)
+        ) {
 
             throw new Error(
                 "Supabase no devolvió una lista de productos."
@@ -502,29 +658,143 @@ async function loadProducts(
         }
 
         console.log(
-            "PanchGo productos encontrados:",
+            "PanchGo TOTAL PRODUCTOS:",
             data.length
         );
 
-        if (data.length === 0) {
+        if (
+            data.length === 0
+        ) {
 
             showProductMessage(
-                "Sin productos todavía.",
-                "Este negocio todavía no tiene productos disponibles.",
+                "No hay productos.",
+                "Supabase no devolvió ningún registro de Products.",
                 "🍽️"
             );
 
             return;
         }
 
-        renderProducts(data);
+
+        /* =================================================
+           MOSTRAR TODOS LOS PRODUCTOS
+        ================================================= */
+
+        productGrid.innerHTML = "";
+
+        data.forEach(
+            function (product) {
+
+                const productCard =
+                    document.createElement(
+                        "div"
+                    );
+
+                productCard.className =
+                    "product-card";
+
+
+                const productName =
+                    product.name ||
+                    "Producto";
+
+
+                const productDescription =
+                    product["Description"] ||
+                    "";
+
+
+                const productPrice =
+                    Number(
+                        product["Price"] || 0
+                    );
+
+
+                const businessIdFromProduct =
+                    product["Businesses_id"] ||
+                    "Sin Business ID";
+
+
+                const activeStatus =
+                    product["Active"];
+
+
+                productCard.innerHTML = `
+
+                    <div class="product-info">
+
+                        <h3>
+                            ${productName}
+                        </h3>
+
+                        <p>
+                            ${productDescription}
+                        </p>
+
+                        <strong>
+                            $${productPrice.toFixed(2)}
+                        </strong>
+
+                        <p>
+                            <small>
+                                Business ID:
+                                ${businessIdFromProduct}
+                            </small>
+                        </p>
+
+                        <p>
+                            <small>
+                                Active:
+                                ${activeStatus}
+                            </small>
+                        </p>
+
+                    </div>
+
+                `;
+
+
+                productGrid.appendChild(
+                    productCard
+                );
+
+            }
+        );
+
+
+        /*
+         * Si llegamos aquí, la página logró leer
+         * correctamente Products.
+         */
+
+        console.log(
+            "PanchGo: TODOS LOS PRODUCTOS FUERON MOSTRADOS."
+        );
 
     } catch (error) {
+
+        clearTimeout(
+            timeout
+        );
 
         console.error(
             "PanchGo ERROR PRODUCTS:",
             error
         );
+
+        if (
+            error.name ===
+            "AbortError"
+        ) {
+
+            showProductMessage(
+                "Supabase no respondió.",
+                "La consulta de productos tardó más de 8 segundos.",
+                "⏱️"
+            );
+
+            return;
+        }
 
         showProductMessage(
             "Error al cargar productos.",
@@ -536,86 +806,8 @@ async function loadProducts(
 
 
 /* =========================================================
-   MOSTRAR PRODUCTOS
-========================================================= */
-
-function renderProducts(
-    products
-) {
-
-    productGrid.innerHTML = "";
-
-    products.forEach(
-        function (product) {
-
-            const productCard =
-                document.createElement("div");
-
-            productCard.className =
-                "product-card";
-
-            const productName =
-                product.name ||
-                "Producto";
-
-            const productDescription =
-                product["Description"] ||
-                "";
-
-            const productPrice =
-                Number(
-                    product["Price"] || 0
-                );
-
-            productCard.innerHTML = `
-
-                <div class="product-info">
-
-                    <h3>
-                        ${productName}
-                    </h3>
-
-                    <p>
-                        ${productDescription}
-                    </p>
-
-                    <strong>
-                        $${productPrice.toFixed(2)}
-                    </strong>
-
-                </div>
-
-                <button
-                    class="primary-button add-product-button"
-                >
-                    Agregar
-                </button>
-            `;
-
-            const addButton =
-                productCard.querySelector(
-                    ".add-product-button"
-                );
-
-            addButton.addEventListener(
-                "click",
-                function () {
-
-                    addToCart(product);
-
-                }
-            );
-
-            productGrid.appendChild(
-                productCard
-            );
-        }
-    );
-}
-
-
-/* =========================================================
    CARRITO
+   SE MANTIENE PARA NO ROMPER LA PÁGINA
 ========================================================= */
 
 function addToCart(
@@ -630,6 +822,7 @@ function addToCart(
                     String(item.id) ===
                     String(product["Id"])
                 );
+
             }
         );
 
@@ -692,12 +885,15 @@ function updateCart() {
                     total +
                     item.quantity
                 );
+
             },
             0
         );
 
+
     cartCount.textContent =
         count;
+
 
     if (
         cart.length === 0
@@ -719,6 +915,7 @@ function updateCart() {
                 </p>
 
             </div>
+
         `;
 
     } else {
@@ -729,7 +926,9 @@ function updateCart() {
             function (item) {
 
                 const itemElement =
-                    document.createElement("div");
+                    document.createElement(
+                        "div"
+                    );
 
                 itemElement.className =
                     "cart-item";
@@ -772,13 +971,16 @@ function updateCart() {
                         </button>
 
                     </div>
+
                 `;
 
                 cartItems.appendChild(
                     itemElement
                 );
+
             }
         );
+
 
         document
             .querySelectorAll(
@@ -795,11 +997,14 @@ function updateCart() {
                                 button.dataset.id,
                                 button.dataset.action
                             );
+
                         }
                     );
+
                 }
             );
     }
+
 
     const subtotal =
         cart.reduce(
@@ -815,18 +1020,22 @@ function updateCart() {
                         item.quantity
                     )
                 );
+
             },
             0
         );
+
 
     const delivery =
         cart.length > 0
             ? 20
             : 0;
 
+
     const total =
         subtotal +
         delivery;
+
 
     cartSubtotal.textContent =
         `$${subtotal.toFixed(2)}`;
@@ -856,10 +1065,12 @@ function changeQuantity(
                     String(product.id) ===
                     String(id)
                 );
+
             }
         );
 
     if (!item) {
+
         return;
     }
 
@@ -868,6 +1079,7 @@ function changeQuantity(
     ) {
 
         item.quantity += 1;
+
     }
 
     if (
@@ -888,6 +1100,7 @@ function changeQuantity(
                             String(product.id) !==
                             String(id)
                         );
+
                     }
                 );
         }
@@ -1055,6 +1268,7 @@ if (sendOrderButton) {
             }
 
             createOrderPreview();
+
         }
     );
 }
@@ -1080,20 +1294,25 @@ function createOrderPreview() {
                         item.quantity
                     )
                 );
+
             },
             0
         );
+
 
     const delivery =
         cart.length > 0
             ? 20
             : 0;
 
+
     const total =
         subtotal +
         delivery;
 
+
     let productsHTML = "";
+
 
     cart.forEach(
         function (item) {
@@ -1113,9 +1332,12 @@ function createOrderPreview() {
                     ).toFixed(2)}
 
                 </p>
+
             `;
+
         }
     );
+
 
     orderPreview.innerHTML = `
 
@@ -1188,7 +1410,9 @@ function createOrderPreview() {
             </p>
 
         </div>
+
     `;
+
 
     orderModal.classList.add(
         "active"
@@ -1227,6 +1451,7 @@ if (whatsappOrderButton) {
                                 item.quantity
                             )
                         );
+
                     },
                     0
                 );
@@ -1262,6 +1487,7 @@ if (whatsappOrderButton) {
                             item.quantity
                         ).toFixed(2) +
                         "\n";
+
                 }
             );
 
@@ -1326,6 +1552,7 @@ if (closeOrderModal) {
             orderModal.classList.remove(
                 "active"
             );
+
         }
     );
 }
@@ -1344,6 +1571,7 @@ if (joinBusinessButton) {
             alert(
                 "Próximamente podrás registrar tu negocio en PanchGo."
             );
+
         }
     );
 }
@@ -1355,149 +1583,4 @@ if (joinBusinessButton) {
 
 updateCart();
 
-async function loadProducts(businessId) {
-
-    console.log(
-        "PanchGo: cargando productos del negocio:",
-        businessId
-    );
-
-    showProductMessage(
-        "Cargando productos...",
-        "Buscando el catálogo de este negocio.",
-        "⏳"
-    );
-
-    try {
-
-        const url =
-            SUPABASE_URL +
-            "/rest/v1/Products" +
-            "?select=*";
-
-        console.log(
-            "PanchGo URL TODOS LOS PRODUCTOS:",
-            url
-        );
-
-        const response =
-            await fetch(
-                url,
-                {
-                    method: "GET",
-
-                    headers: {
-                        "apikey":
-                            SUPABASE_KEY,
-
-                        "Authorization":
-                            "Bearer " +
-                            SUPABASE_KEY,
-
-                        "Accept":
-                            "application/json"
-                    }
-                }
-            );
-
-        console.log(
-            "PanchGo HTTP productos:",
-            response.status
-        );
-
-        const responseText =
-            await response.text();
-
-        console.log(
-            "PanchGo respuesta TODOS LOS PRODUCTOS:",
-            responseText
-        );
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Supabase respondió HTTP " +
-                response.status +
-                ": " +
-                responseText
-            );
-        }
-
-        const data =
-            JSON.parse(responseText);
-
-        if (!Array.isArray(data)) {
-
-            throw new Error(
-                "Supabase no devolvió una lista de productos."
-            );
-        }
-
-        console.log(
-            "PanchGo total de productos recibidos:",
-            data.length
-        );
-
-        /*
-         * Filtramos AQUÍ en JavaScript.
-         * Ya no dependemos del filtro Businesses_id
-         * de la URL de Supabase.
-         */
-
-        const businessProducts =
-            data.filter(
-                function (product) {
-
-                    return (
-                        String(
-                            product["Businesses_id"]
-                        ).toLowerCase() ===
-                        String(
-                            businessId
-                        ).toLowerCase()
-                    );
-
-                }
-            );
-
-        console.log(
-            "PanchGo productos del negocio:",
-            businessProducts
-        );
-
-        console.log(
-            "PanchGo cantidad productos del negocio:",
-            businessProducts.length
-        );
-
-        if (
-            businessProducts.length === 0
-        ) {
-
-            showProductMessage(
-                "Sin productos todavía.",
-                "No se encontraron productos relacionados con este negocio.",
-                "🍽️"
-            );
-
-            return;
-        }
-
-        renderProducts(
-            businessProducts
-        );
-
-    } catch (error) {
-
-        console.error(
-            "PanchGo ERROR PRODUCTS:",
-            error
-        );
-
-        showProductMessage(
-            "Error al cargar productos.",
-            error.message,
-            "⚠️"
-        );
-    }
-}
+loadBusinesses();
