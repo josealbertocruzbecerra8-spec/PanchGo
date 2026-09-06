@@ -21,12 +21,6 @@ const SUPABASE_KEY =
    CONFIGURACIÓN PANCHGO
 ========================================================= */
 
-const DELIVERY_COST = 25;
-
-/*
- * Número de WhatsApp que recibirá los pedidos.
- * Formato internacional sin +, espacios ni guiones.
- */
 const PANCHGO_WHATSAPP =
     "525629913802";
 
@@ -40,6 +34,70 @@ let cart = [];
 let selectedBusiness = null;
 
 let selectedBusinessData = null;
+
+let customerLocation = null;
+
+let deliveryDistanceKm = null;
+
+let deliveryFee = 0;
+
+let deliveryQuoteRequired = false;
+
+
+/* =========================================================
+   TARIFAS DE ENVÍO
+========================================================= */
+
+function calculateDeliveryFee(
+    distanceKm
+) {
+
+    if (distanceKm <= 2) {
+        return 25;
+    }
+
+    if (distanceKm <= 4) {
+        return 28;
+    }
+
+    if (distanceKm <= 6) {
+        return 32;
+    }
+
+    if (distanceKm <= 8) {
+        return 36;
+    }
+
+    if (distanceKm <= 10) {
+        return 40;
+    }
+
+    if (distanceKm <= 12) {
+        return 45;
+    }
+
+    if (distanceKm <= 15) {
+        return 50;
+    }
+
+    if (distanceKm <= 18) {
+        return 60;
+    }
+
+    if (distanceKm <= 22) {
+        return 70;
+    }
+
+    if (distanceKm <= 25) {
+        return 80;
+    }
+
+    if (distanceKm <= 30) {
+        return 95;
+    }
+
+    return null;
+}
 
 
 /* =========================================================
@@ -89,10 +147,14 @@ const productGrid =
     );
 
 const cartSection =
-    document.getElementById("cartSection");
+    document.getElementById(
+        "cartSection"
+    );
 
 const cartItems =
-    document.getElementById("cartItems");
+    document.getElementById(
+        "cartItems"
+    );
 
 const cartSubtotal =
     document.getElementById(
@@ -122,6 +184,16 @@ const customerPhone =
 const customerAddress =
     document.getElementById(
         "customerAddress"
+    );
+
+const useLocationButton =
+    document.getElementById(
+        "useLocationButton"
+    );
+
+const locationStatus =
+    document.getElementById(
+        "locationStatus"
     );
 
 const paymentMethod =
@@ -267,7 +339,8 @@ async function loadBusinesses() {
         const url =
             SUPABASE_URL +
             "/rest/v1/Businesses" +
-            "?select=id,name,%22Descripci%C3%B3n%22,%22Active%22,latitude,longitude"+=eq.true" +
+            "?select=id,name,%22Descripci%C3%B3n%22,%22Active%22,latitude,longitude" +
+            "&%22Active%22=eq.true" +
             "&order=name";
 
         console.log(
@@ -509,6 +582,17 @@ async function openBusiness(
     selectedBusinessData =
         business;
 
+    /*
+     * Al cambiar de negocio,
+     * se reinicia el cálculo del envío.
+     */
+
+    deliveryDistanceKm = null;
+
+    deliveryFee = 0;
+
+    deliveryQuoteRequired = false;
+
     productsBusinessName.textContent =
         business.name ||
         "Negocio";
@@ -562,24 +646,19 @@ async function loadProducts(
 
     try {
 
-        /*
-         * IMPORTANTE:
-         *
-         * Ahora sí filtramos Businesses_id.
-         *
-         * Esto hace que cada negocio solamente
-         * muestre sus propios productos.
-         */
-
-                const url =
+        const url =
             SUPABASE_URL +
-            "/rest/v1/Businesses" +
-            "?select=id,name,%22Descripci%C3%B3n%22,%22Active%22,latitude,longitude" +
+            "/rest/v1/Products" +
+            "?select=%22Id%22,name,%22Description%22,%22Price%22,%22Active%22,%22Businesses_id%22" +
+            "&%22Businesses_id%22=eq." +
+            encodeURIComponent(
+                businessId
+            ) +
             "&%22Active%22=eq.true" +
             "&order=name";
 
         console.log(
-            "PanchGo URL negocios:",
+            "PanchGo URL productos:",
             url
         );
 
@@ -812,11 +891,6 @@ function addToCart(
         product["Businesses_id"] ||
         selectedBusiness;
 
-
-    /*
-     * NO PERMITIR PRODUCTOS DE DIFERENTES NEGOCIOS
-     */
-
     if (
         cart.length > 0
     ) {
@@ -841,7 +915,6 @@ function addToCart(
         }
     }
 
-
     const existingProduct =
         cart.find(
             function (item) {
@@ -853,7 +926,6 @@ function addToCart(
 
             }
         );
-
 
     if (existingProduct) {
 
@@ -889,8 +961,6 @@ function addToCart(
     }
 
     updateCart();
-
-    
 }
 
 
@@ -916,10 +986,8 @@ function updateCart() {
             0
         );
 
-
     cartCount.textContent =
         count;
-
 
     if (
         cart.length === 0
@@ -1009,7 +1077,6 @@ function updateCart() {
             }
         );
 
-
         document
             .querySelectorAll(
                 ".quantity-button"
@@ -1033,7 +1100,6 @@ function updateCart() {
             );
     }
 
-
     const subtotal =
         cart.reduce(
             function (
@@ -1053,23 +1119,54 @@ function updateCart() {
             0
         );
 
-
-    const delivery =
-    cart.length > 0
-        ? 25
-        : 0;
-
-
-    const total =
-        subtotal +
-        delivery;
-
-
     cartSubtotal.textContent =
         `$${subtotal.toFixed(2)}`;
 
+    if (
+        cart.length === 0
+    ) {
+
+        deliveryCost.textContent =
+            "$0.00";
+
+        cartTotal.textContent =
+            "$0.00";
+
+        return;
+    }
+
+    if (
+        deliveryQuoteRequired
+    ) {
+
+        deliveryCost.textContent =
+            "Cotizar";
+
+        cartTotal.textContent =
+            "Cotizar";
+
+        return;
+    }
+
+    if (
+        deliveryDistanceKm === null
+    ) {
+
+        deliveryCost.textContent =
+            "Calculando";
+
+        cartTotal.textContent =
+            "Calculando";
+
+        return;
+    }
+
     deliveryCost.textContent =
-        `$${delivery.toFixed(2)}`;
+        `$${deliveryFee.toFixed(2)}`;
+
+    const total =
+        subtotal +
+        deliveryFee;
 
     cartTotal.textContent =
         `$${total.toFixed(2)}`;
@@ -1138,6 +1235,326 @@ function changeQuantity(
 
 
 /* =========================================================
+   CALCULAR RUTA
+========================================================= */
+
+async function calculateRoute() {
+
+    if (
+        !selectedBusinessData
+    ) {
+
+        throw new Error(
+            "Primero selecciona un negocio."
+        );
+
+    }
+
+    if (
+        !Number.isFinite(
+            Number(
+                selectedBusinessData.latitude
+            )
+        ) ||
+        !Number.isFinite(
+            Number(
+                selectedBusinessData.longitude
+            )
+        )
+    ) {
+
+        throw new Error(
+            "Este negocio todavía no tiene una ubicación registrada."
+        );
+
+    }
+
+    if (
+        !customerLocation
+    ) {
+
+        throw new Error(
+            "Primero debes usar tu ubicación."
+        );
+
+    }
+
+    const start = [
+
+        Number(
+            selectedBusinessData.longitude
+        ),
+
+        Number(
+            selectedBusinessData.latitude
+        )
+
+    ];
+
+    const end = [
+
+        Number(
+            customerLocation.longitude
+        ),
+
+        Number(
+            customerLocation.latitude
+        )
+
+    ];
+
+    const response =
+        await fetch(
+            "/api/route",
+            {
+
+                method:
+                    "POST",
+
+                headers: {
+
+                    "Content-Type":
+                        "application/json"
+
+                },
+
+                body:
+                    JSON.stringify({
+
+                        start:
+                            start,
+
+                        end:
+                            end
+
+                    })
+
+            }
+        );
+
+    const data =
+        await response.json();
+
+    if (
+        !response.ok
+    ) {
+
+        throw new Error(
+            data.error ||
+            "No se pudo calcular la ruta."
+        );
+
+    }
+
+    if (
+        !Number.isFinite(
+            Number(
+                data.distanceKm
+            )
+        )
+    ) {
+
+        throw new Error(
+            "La ruta no devolvió una distancia válida."
+        );
+
+    }
+
+    deliveryDistanceKm =
+        Number(
+            data.distanceKm
+        );
+
+    const calculatedFee =
+        calculateDeliveryFee(
+            deliveryDistanceKm
+        );
+
+    if (
+        calculatedFee === null
+    ) {
+
+        deliveryFee = 0;
+
+        deliveryQuoteRequired =
+            true;
+
+    } else {
+
+        deliveryFee =
+            calculatedFee;
+
+        deliveryQuoteRequired =
+            false;
+
+    }
+
+    updateCart();
+
+    return data;
+}
+
+
+/* =========================================================
+   USAR MI UBICACIÓN
+========================================================= */
+
+if (
+    useLocationButton
+) {
+
+    useLocationButton.addEventListener(
+        "click",
+        function () {
+
+            if (
+                !navigator.geolocation
+            ) {
+
+                locationStatus.textContent =
+                    "Tu dispositivo no permite obtener la ubicación.";
+
+                return;
+            }
+
+            if (
+                !selectedBusinessData
+            ) {
+
+                locationStatus.textContent =
+                    "Primero selecciona el negocio donde vas a comprar.";
+
+                return;
+            }
+
+            locationStatus.textContent =
+                "Obteniendo tu ubicación...";
+
+            useLocationButton.disabled =
+                true;
+
+            navigator.geolocation.getCurrentPosition(
+
+                async function (position) {
+
+                    customerLocation = {
+
+                        latitude:
+                            position.coords.latitude,
+
+                        longitude:
+                            position.coords.longitude
+
+                    };
+
+                    try {
+
+                        locationStatus.textContent =
+                            "Calculando distancia de entrega...";
+
+                        await calculateRoute();
+
+                        if (
+                            deliveryQuoteRequired
+                        ) {
+
+                            locationStatus.textContent =
+                                "La distancia es mayor a 30 km. El envío requiere cotización.";
+
+                        } else {
+
+                            locationStatus.textContent =
+                                "Distancia: " +
+                                deliveryDistanceKm.toFixed(2) +
+                                " km · Envío: $" +
+                                deliveryFee.toFixed(2);
+
+                        }
+
+                    } catch (error) {
+
+                        console.error(
+                            "PanchGo ERROR UBICACIÓN:",
+                            error
+                        );
+
+                        locationStatus.textContent =
+                            error.message;
+
+                    } finally {
+
+                        useLocationButton.disabled =
+                            false;
+
+                    }
+
+                },
+
+                function (error) {
+
+                    console.error(
+                        "PanchGo GEOLOCATION ERROR:",
+                        error
+                    );
+
+                    let message =
+                        "No se pudo obtener tu ubicación.";
+
+                    if (
+                        error.code === 1
+                    ) {
+
+                        message =
+                            "Permiso de ubicación denegado.";
+
+                    }
+
+                    if (
+                        error.code === 2
+                    ) {
+
+                        message =
+                            "No se pudo determinar tu ubicación.";
+
+                    }
+
+                    if (
+                        error.code === 3
+                    ) {
+
+                        message =
+                            "La ubicación tardó demasiado.";
+
+                    }
+
+                    locationStatus.textContent =
+                        message;
+
+                    useLocationButton.disabled =
+                        false;
+
+                },
+
+                {
+
+                    enableHighAccuracy:
+                        true,
+
+                    timeout:
+                        15000,
+
+                    maximumAge:
+                        0
+
+                }
+            );
+
+        }
+    );
+}
+
+
+/* =========================================================
    NAVEGACIÓN
 ========================================================= */
 
@@ -1182,539 +1599,3 @@ if (heroFoodButton) {
         showBusinesses
     );
 }
-
-
-if (storesButton) {
-
-    storesButton.addEventListener(
-        "click",
-        showStores
-    );
-}
-
-
-if (heroStoreButton) {
-
-    heroStoreButton.addEventListener(
-        "click",
-        showStores
-    );
-}
-
-
-/* =========================================================
-   BOTÓN CARRITO
-========================================================= */
-
-if (cartButton) {
-
-    cartButton.addEventListener(
-        "click",
-        function () {
-
-            cartSection.scrollIntoView({
-                behavior: "smooth"
-            });
-
-        }
-    );
-}
-
-
-/* =========================================================
-   CONFIRMAR PEDIDO
-========================================================= */
-
-if (sendOrderButton) {
-
-    sendOrderButton.addEventListener(
-        "click",
-        function () {
-
-            if (
-                cart.length === 0
-            ) {
-
-                alert(
-                    "Agrega al menos un producto."
-                );
-
-                return;
-            }
-
-            if (
-                !customerName.value.trim()
-            ) {
-
-                alert(
-                    "Escribe tu nombre."
-                );
-
-                customerName.focus();
-
-                return;
-            }
-
-            if (
-                !customerPhone.value.trim()
-            ) {
-
-                alert(
-                    "Escribe tu teléfono."
-                );
-
-                customerPhone.focus();
-
-                return;
-            }
-
-            if (
-                !customerAddress.value.trim()
-            ) {
-
-                alert(
-                    "Escribe tu dirección."
-                );
-
-                customerAddress.focus();
-
-                return;
-            }
-
-            if (
-                !paymentMethod.value
-            ) {
-
-                alert(
-                    "Selecciona una forma de pago."
-                );
-
-                paymentMethod.focus();
-
-                return;
-            }
-
-            createOrderPreview();
-
-        }
-    );
-}
-
-
-/* =========================================================
-   RESUMEN DEL PEDIDO
-========================================================= */
-
-function createOrderPreview() {
-
-    const subtotal =
-        cart.reduce(
-            function (
-                total,
-                item
-            ) {
-
-                return (
-                    total +
-                    (
-                        item.price *
-                        item.quantity
-                    )
-                );
-
-            },
-            0
-        );
-
-
-    const delivery =
-        DELIVERY_COST;
-
-
-    const total =
-        subtotal +
-        delivery;
-
-
-    let productsHTML = "";
-
-
-    cart.forEach(
-        function (item) {
-
-            productsHTML += `
-
-                <p>
-
-                    ${item.quantity}
-                    ×
-                    ${item.name}
-
-                    —
-                    $${(
-                        item.price *
-                        item.quantity
-                    ).toFixed(2)}
-
-                </p>
-
-            `;
-
-        }
-    );
-
-
-    let paymentNotice = "";
-
-
-    if (
-        paymentMethod.value ===
-        "Efectivo"
-    ) {
-
-        paymentNotice = `
-
-            <div class="order-payment-notice">
-
-                <strong>
-                    ⚠️ PAGO EN EFECTIVO
-                </strong>
-
-                <p>
-                    El cliente deberá entregar
-                    el efectivo al repartidor.
-                </p>
-
-            </div>
-
-        `;
-
-    }
-
-
-    if (
-        paymentMethod.value ===
-        "Transferencia"
-    ) {
-
-        paymentNotice = `
-
-            <div class="order-payment-notice">
-
-                <strong>
-                    📲 PAGO POR TRANSFERENCIA
-                </strong>
-
-                <p>
-                    Verificar la transferencia
-                    antes de entregar el pedido.
-                </p>
-
-            </div>
-
-        `;
-
-    }
-
-
-    orderPreview.innerHTML = `
-
-        <div class="order-summary">
-
-            <h3>
-                ${cart[0].business}
-            </h3>
-
-            ${productsHTML}
-
-            <hr>
-
-            <p>
-                <strong>
-                    Productos:
-                </strong>
-
-                $${subtotal.toFixed(2)}
-            </p>
-
-            <p>
-                <strong>
-                    Envío:
-                </strong>
-
-                $${delivery.toFixed(2)}
-            </p>
-
-            <p>
-                <strong>
-                    Total:
-                </strong>
-
-                $${total.toFixed(2)}
-            </p>
-
-            <hr>
-
-            <p>
-                <strong>
-                    Cliente:
-                </strong>
-
-                ${customerName.value}
-            </p>
-
-            <p>
-                <strong>
-                    Teléfono:
-                </strong>
-
-                ${customerPhone.value}
-            </p>
-
-            <p>
-                <strong>
-                    Dirección:
-                </strong>
-
-                ${customerAddress.value}
-            </p>
-
-            <p>
-                <strong>
-                    Pago:
-                </strong>
-
-                ${paymentMethod.value}
-            </p>
-
-            ${paymentNotice}
-
-        </div>
-
-    `;
-
-
-    orderModal.classList.add(
-        "active"
-    );
-}
-
-
-/* =========================================================
-   WHATSAPP
-========================================================= */
-
-if (whatsappOrderButton) {
-
-    whatsappOrderButton.addEventListener(
-        "click",
-        function () {
-
-            if (
-                cart.length === 0
-            ) {
-
-                return;
-            }
-
-
-            const subtotal =
-                cart.reduce(
-                    function (
-                        total,
-                        item
-                    ) {
-
-                        return (
-                            total +
-                            (
-                                item.price *
-                                item.quantity
-                            )
-                        );
-
-                    },
-                    0
-                );
-
-
-            const delivery =
-                DELIVERY_COST;
-
-
-            const total =
-                subtotal +
-                delivery;
-
-
-            let message =
-                "🛵 *NUEVO PEDIDO PANCHGO*\n\n";
-
-
-            message +=
-                "*Negocio:* " +
-                cart[0].business +
-                "\n\n";
-
-
-            message +=
-                "*Productos:*\n";
-
-
-            cart.forEach(
-                function (item) {
-
-                    message +=
-                        item.quantity +
-                        " × " +
-                        item.name +
-                        " - $" +
-                        (
-                            item.price *
-                            item.quantity
-                        ).toFixed(2) +
-                        "\n";
-
-                }
-            );
-
-
-            message +=
-                "\n*Productos:* $" +
-                subtotal.toFixed(2);
-
-
-            message +=
-                "\n*Envío:* $" +
-                delivery.toFixed(2);
-
-
-            message +=
-                "\n*TOTAL:* $" +
-                total.toFixed(2);
-
-
-            message +=
-                "\n\n*Cliente:* " +
-                customerName.value.trim();
-
-
-            message +=
-                "\n*Teléfono:* " +
-                customerPhone.value.trim();
-
-
-            message +=
-                "\n*Dirección:* " +
-                customerAddress.value.trim();
-
-
-            message +=
-                "\n*Forma de pago:* " +
-                paymentMethod.value;
-
-
-            /*
-             * ADVERTENCIA ESPECIAL PARA EFECTIVO
-             */
-
-            if (
-                paymentMethod.value ===
-                "Efectivo"
-            ) {
-
-                message +=
-                    "\n\n⚠️ *IMPORTANTE:* COBRAR AL CLIENTE ANTES DE PAGAR/RECOGER EL PEDIDO.";
-
-            }
-
-
-            /*
-             * INFORMACIÓN PARA TRANSFERENCIA
-             */
-
-            if (
-                paymentMethod.value ===
-                "Transferencia"
-            ) {
-
-                message +=
-                    "\n\n📲 *IMPORTANTE:* VERIFICAR LA TRANSFERENCIA ANTES DE ENTREGAR EL PEDIDO.";
-
-            }
-
-
-            message +=
-                "\n\n*FLUJO PANCHGO:* Contactar al negocio → preparar pedido → recoger → entregar al cliente.";
-
-
-            const whatsappURL =
-                "https://wa.me/" +
-                PANCHGO_WHATSAPP +
-                "?text=" +
-                encodeURIComponent(
-                    message
-                );
-
-
-            console.log(
-                "PanchGo WhatsApp:",
-                whatsappURL
-            );
-
-
-            window.open(
-                whatsappURL,
-                "_blank"
-            );
-
-        }
-    );
-}
-
-
-/* =========================================================
-   CERRAR MODAL
-========================================================= */
-
-if (closeOrderModal) {
-
-    closeOrderModal.addEventListener(
-        "click",
-        function () {
-
-            orderModal.classList.remove(
-                "active"
-            );
-
-        }
-    );
-}
-
-
-/* =========================================================
-   REGISTRAR NEGOCIO
-========================================================= */
-
-if (joinBusinessButton) {
-
-    joinBusinessButton.addEventListener(
-        "click",
-        function () {
-
-            alert(
-                "Próximamente podrás registrar tu negocio en PanchGo."
-            );
-
-        }
-    );
-}
-
-
-/* =========================================================
-   INICIO
-========================================================= */
-
-updateCart();
-
-loadBusinesses();
