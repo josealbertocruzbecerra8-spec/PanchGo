@@ -576,10 +576,7 @@ async function loadProducts(
             "/rest/v1/Businesses" +
             "?select=id,name,%22Descripci%C3%B3n%22,%22Active%22,latitude,longitude" +
             "&%22Active%22=eq.true" +
-            "&order=name";
-            ) +
-            "&%22Active%22=eq.true" +
-            "&order=name";
+            
 
         console.log(
             "PanchGo URL productos:",
