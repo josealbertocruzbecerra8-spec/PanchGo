@@ -267,8 +267,7 @@ async function loadBusinesses() {
         const url =
             SUPABASE_URL +
             "/rest/v1/Businesses" +
-            "?select=id,name,%22Descripci%C3%B3n%22,%22Active%22" +
-            "&%22Active%22=eq.true" +
+            "?select=id,name,%22Descripci%C3%B3n%22,%22Active%22,latitude,longitude"+=eq.true" +
             "&order=name";
 
         console.log(
