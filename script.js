@@ -1122,7 +1122,6 @@ if (heroStoreButton) {
     );
 }
 
-
 /* =========================
    ENVIAR PEDIDO
 ========================= */
@@ -1131,4 +1130,349 @@ if (sendOrderButton) {
 
     sendOrderButton.addEventListener(
         "click",
-        () =>
+        () => {
+
+            if (cart.length === 0) {
+                alert("Tu carrito está vacío.");
+                return;
+            }
+
+            if (!selectedBusinessData) {
+                alert("Selecciona un negocio primero.");
+                return;
+            }
+
+            if (
+                !customerName ||
+                !customerPhone ||
+                !customerAddress
+            ) {
+                alert("Completa tus datos de entrega.");
+                return;
+            }
+
+            if (
+                !customerName.value.trim() ||
+                !customerPhone.value.trim() ||
+                !customerAddress.value.trim()
+            ) {
+                alert("Completa tus datos de entrega.");
+                return;
+            }
+
+            if (!customerLocation) {
+                alert(
+                    "Primero usa el botón 'Usar mi ubicación'."
+                );
+                return;
+            }
+
+            if (deliveryDistanceKm === null) {
+                alert(
+                    "Espera a que se calcule la distancia de entrega."
+                );
+                return;
+            }
+
+            createOrderPreview();
+        }
+    );
+}
+
+
+/* =========================
+   PREVISUALIZAR PEDIDO
+========================= */
+
+function createOrderPreview() {
+
+    if (!orderPreview) return;
+
+    const subtotal =
+        cart.reduce(
+            (total, item) =>
+                total +
+                item.price * item.quantity,
+            0
+        );
+
+    const deliveryText =
+        deliveryQuoteRequired
+            ? "Por cotizar"
+            : "$" + deliveryFee.toFixed(2);
+
+    const totalText =
+        deliveryQuoteRequired
+            ? "Por cotizar"
+            : "$" +
+              (
+                  subtotal +
+                  deliveryFee
+              ).toFixed(2);
+
+    let productsText = "";
+
+    cart.forEach(item => {
+
+        productsText += `
+            <p>
+                ${item.quantity} ×
+                ${item.name}
+                — $${(
+                    item.price *
+                    item.quantity
+                ).toFixed(2)}
+            </p>
+        `;
+    });
+
+    orderPreview.innerHTML = `
+        <div class="order-preview-content">
+
+            <h3>
+                ${selectedBusinessData.name}
+            </h3>
+
+            ${productsText}
+
+            <hr>
+
+            <p>
+                <strong>Subtotal:</strong>
+                $${subtotal.toFixed(2)}
+            </p>
+
+            <p>
+                <strong>Envío:</strong>
+                ${deliveryText}
+            </p>
+
+            <p>
+                <strong>Total:</strong>
+                ${totalText}
+            </p>
+
+            <hr>
+
+            <p>
+                <strong>Cliente:</strong>
+                ${customerName.value}
+            </p>
+
+            <p>
+                <strong>Teléfono:</strong>
+                ${customerPhone.value}
+            </p>
+
+            <p>
+                <strong>Dirección:</strong>
+                ${customerAddress.value}
+            </p>
+
+            <p>
+                <strong>Pago:</strong>
+                ${
+                    paymentMethod
+                        ? paymentMethod.value
+                        : "No especificado"
+                }
+            </p>
+
+        </div>
+    `;
+
+    if (orderModal) {
+        orderModal.style.display = "flex";
+    }
+}
+
+
+/* =========================
+   CERRAR MODAL
+========================= */
+
+if (closeOrderModal) {
+
+    closeOrderModal.addEventListener(
+        "click",
+        () => {
+
+            if (orderModal) {
+                orderModal.style.display = "none";
+            }
+        }
+    );
+}
+
+
+/* =========================
+   WHATSAPP
+========================= */
+
+if (whatsappOrderButton) {
+
+    whatsappOrderButton.addEventListener(
+        "click",
+        () => {
+
+            if (cart.length === 0) return;
+
+            const subtotal =
+                cart.reduce(
+                    (total, item) =>
+                        total +
+                        item.price *
+                        item.quantity,
+                    0
+                );
+
+            let message =
+                "Hola PanchGo, quiero hacer este pedido:\n\n";
+
+            message +=
+                "Negocio: " +
+                (
+                    selectedBusinessData?.name ||
+                    "Negocio"
+                ) +
+                "\n\n";
+
+            cart.forEach(item => {
+
+                message +=
+                    item.quantity +
+                    " x " +
+                    item.name +
+                    " - $" +
+                    (
+                        item.price *
+                        item.quantity
+                    ).toFixed(2) +
+                    "\n";
+            });
+
+            message +=
+                "\nSubtotal: $" +
+                subtotal.toFixed(2);
+
+            if (deliveryQuoteRequired) {
+
+                message +=
+                    "\nEnvío: Por cotizar";
+
+            } else {
+
+                message +=
+                    "\nEnvío: $" +
+                    deliveryFee.toFixed(2);
+
+                message +=
+                    "\nTotal: $" +
+                    (
+                        subtotal +
+                        deliveryFee
+                    ).toFixed(2);
+            }
+
+            message +=
+                "\n\nCliente: " +
+                (customerName?.value || "");
+
+            message +=
+                "\nTeléfono: " +
+                (customerPhone?.value || "");
+
+            message +=
+                "\nDirección: " +
+                (customerAddress?.value || "");
+
+            message +=
+                "\nPago: " +
+                (paymentMethod?.value || "");
+
+            if (deliveryDistanceKm !== null) {
+
+                message +=
+                    "\nDistancia: " +
+                    deliveryDistanceKm.toFixed(1) +
+                    " km";
+            }
+
+            const whatsappUrl =
+                "https://wa.me/" +
+                PANCHGO_WHATSAPP +
+                "?text=" +
+                encodeURIComponent(message);
+
+            window.open(
+                whatsappUrl,
+                "_blank"
+            );
+        }
+    );
+}
+
+
+/* =========================
+   REGISTRAR NEGOCIO
+========================= */
+
+if (joinBusinessButton) {
+
+    joinBusinessButton.addEventListener(
+        "click",
+        () => {
+
+            const message =
+                "Hola PanchGo, quiero registrar mi negocio en la plataforma.";
+
+            const url =
+                "https://wa.me/" +
+                PANCHGO_WHATSAPP +
+                "?text=" +
+                encodeURIComponent(message);
+
+            window.open(
+                url,
+                "_blank"
+            );
+        }
+    );
+}
+
+
+/* =========================
+   CERRAR MODAL AL HACER CLICK
+   FUERA
+========================= */
+
+if (orderModal) {
+
+    orderModal.addEventListener(
+        "click",
+        event => {
+
+            if (event.target === orderModal) {
+
+                orderModal.style.display =
+                    "none";
+            }
+        }
+    );
+}
+
+
+/* =========================
+   INICIO
+========================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        updateCart();
+
+        loadBusinesses();
+
+    }
+);
