@@ -573,11 +573,10 @@ async function loadProducts(
 
         const url =
             SUPABASE_URL +
-            "/rest/v1/Products" +
-            "?select=%22Id%22,name,%22Description%22,%22Price%22,%22Active%22,%22Businesses_id%22" +
-            "&Businesses_id=eq." +
-            encodeURIComponent(
-                businessId
+            "/rest/v1/Businesses" +
+            "?select=id,name,%22Descripci%C3%B3n%22,%22Active%22,latitude,longitude" +
+            "&%22Active%22=eq.true" +
+            "&order=name";
             ) +
             "&%22Active%22=eq.true" +
             "&order=name";
