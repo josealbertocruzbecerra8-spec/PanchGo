@@ -895,9 +895,7 @@ function addToCart(
 
     updateCart();
 
-    cartSection.scrollIntoView({
-        behavior: "smooth"
-    });
+    
 }
 
 
