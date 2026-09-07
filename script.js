@@ -915,8 +915,6 @@ if (useLocationButton) {
    CALCULAR RUTA
 ========================= */
 
-async function calculateRoute() {
-  if (!customerLocation || !selectedBusinessData) return;
 
   const businessLat = Number(selectedBusinessData.latitude);
   const businessLng = Number(selectedBusinessData.longitude);
