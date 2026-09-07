@@ -281,8 +281,23 @@ async function openBusiness(business) {
 selectedBusiness =  
     business.id;  
 
-selectedBusinessData =  
-    business;  
+selectedBusinessData = {
+    ...business,
+    latitude: Number(
+        business.latitude ??
+        business.Latitude ??
+        business.lat ??
+        business.Lat ??
+        21.024359
+    ),
+    longitude: Number(
+        business.longitude ??
+        business.Longitude ??
+        business.lng ??
+        business.Lng ??
+        -101.858366
+    )
+};  
 
 deliveryDistanceKm =  
     null;  
