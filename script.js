@@ -916,6 +916,76 @@ if (useLocationButton) {
 ========================= */
 
 async function calculateRoute() {
+  if (!customerLocation || !selectedBusinessData) return;
+
+  const businessLat = Number(selectedBusinessData.latitude);
+  const businessLng = Number(selectedBusinessData.longitude);
+
+  if (!Number.isFinite(businessLat) || !Number.isFinite(businessLng)) {
+    console.error("PanchGo ROUTE ERROR: coordenadas del negocio inválidas.");
+    if (locationStatus) {
+      locationStatus.textContent = "No pudimos obtener la ubicación del negocio.";
+    }
+    return;
+  }
+
+  if (locationStatus) {
+    locationStatus.textContent = "Calculando distancia de entrega...";
+  }
+
+  try {
+    const response = await fetch("/api/route.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        start: [businessLng, businessLat],
+        end: [
+          Number(customerLocation.longitude),
+          Number(customerLocation.latitude)
+        ]
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "No se pudo calcular la ruta.");
+    }
+
+    const distanceKm = Number(data.distanceKm);
+
+    if (!Number.isFinite(distanceKm)) {
+      throw new Error("La distancia recibida no es válida.");
+    }
+
+    deliveryDistanceKm = distanceKm;
+    deliveryFee = calculateDeliveryFee(distanceKm);
+    deliveryQuoteRequired = deliveryFee === null;
+
+    if (locationStatus) {
+      if (deliveryQuoteRequired) {
+        locationStatus.textContent =
+          "Distancia: " + distanceKm.toFixed(1) + " km. Envío por cotizar.";
+      } else {
+        locationStatus.textContent =
+          "Distancia: " + distanceKm.toFixed(1) +
+          " km. Envío: $" + deliveryFee;
+      }
+    }
+
+    updateCartTotals();
+
+  } catch (error) {
+    console.error("PanchGo ROUTE ERROR:", error);
+
+    if (locationStatus) {
+      locationStatus.textContent =
+        "No pudimos calcular la distancia.";
+    }
+  }
+}
 
     if (
         !customerLocation ||
