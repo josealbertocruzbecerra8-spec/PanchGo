@@ -921,6 +921,136 @@ async function calculateRoute() {
         !customerLocation ||
         !selectedBusinessData
     ) {
+        return;
+    }
+
+    const businessLat =
+        Number(selectedBusinessData.latitude);
+
+    const businessLng =
+        Number(selectedBusinessData.longitude);
+
+    const customerLat =
+        Number(customerLocation.latitude);
+
+    const customerLng =
+        Number(customerLocation.longitude);
+
+    if (
+        !Number.isFinite(businessLat) ||
+        !Number.isFinite(businessLng) ||
+        !Number.isFinite(customerLat) ||
+        !Number.isFinite(customerLng)
+    ) {
+        console.error(
+            "PanchGo ROUTE ERROR: coordenadas inválidas."
+        );
+
+        if (locationStatus) {
+            locationStatus.textContent =
+                "No pudimos obtener coordenadas válidas.";
+        }
+
+        return;
+    }
+
+    if (locationStatus) {
+        locationStatus.textContent =
+            "Calculando distancia de entrega...";
+    }
+
+    try {
+
+        const url =
+            "https://router.project-osrm.org/route/v1/driving/" +
+            businessLng + "," + businessLat +
+            ";" +
+            customerLng + "," + customerLat +
+            "?overview=false";
+
+        const response =
+            await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(
+                "Error HTTP " + response.status
+            );
+        }
+
+        const data =
+            await response.json();
+
+        if (
+            data.code !== "Ok" ||
+            !data.routes ||
+            !data.routes[0]
+        ) {
+            throw new Error(
+                "El servicio de rutas no devolvió una ruta válida."
+            );
+        }
+
+        const distanceMeters =
+            Number(data.routes[0].distance);
+
+        if (!Number.isFinite(distanceMeters)) {
+            throw new Error(
+                "No se recibió una distancia válida."
+            );
+        }
+
+        deliveryDistanceKm =
+            distanceMeters / 1000;
+
+        deliveryFee =
+            calculateDeliveryFee(
+                deliveryDistanceKm
+            );
+
+        deliveryQuoteRequired =
+            deliveryFee === null;
+
+        if (locationStatus) {
+
+            if (deliveryQuoteRequired) {
+
+                locationStatus.textContent =
+                    "Distancia: " +
+                    deliveryDistanceKm.toFixed(1) +
+                    " km. Envío por cotizar.";
+
+            } else {
+
+                locationStatus.textContent =
+                    "Distancia: " +
+                    deliveryDistanceKm.toFixed(1) +
+                    " km. Envío: $" +
+                    deliveryFee;
+            }
+        }
+
+        updateCartTotals();
+
+    } catch (error) {
+
+        console.error(
+            "PanchGo ROUTE ERROR:",
+            error
+        );
+
+        deliveryDistanceKm = null;
+
+        if (locationStatus) {
+            locationStatus.textContent =
+                "No pudimos calcular la distancia.";
+        }
+    }
+}
+
+    if (
+        !customerLocation ||
+        !selectedBusinessData
+    ) {
 
         return;
     }
