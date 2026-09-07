@@ -984,8 +984,8 @@ try {
 
     if (locationStatus) {  
 
-        locationStatus.textContent =  
-            "No pudimos calcular la distancia.";  
+        locationStatus.textContent =
+    "ERROR: " + error.message;
     }  
 }
 
